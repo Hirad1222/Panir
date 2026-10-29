@@ -5,7 +5,7 @@
 **یک فهرست سریع و دوزبانه از کانفیگ‌های V2Ray**
 **A fast, bilingual directory of V2Ray configurations**
 
-[**🌐 Open the site → hirad1222.github.io/panir**](https://hirad1222.github.io/panir/)
+[**🌐 Open the site → hirad1222.github.io/panir**](https://hirad1222.github.io/Panir/)
 
 </div>
 
