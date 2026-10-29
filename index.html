@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<title>V2Ray Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #050b1f;
+    --bg-2: #0b1533;
+    --surface: rgba(15, 26, 58, 0.78);
+    --surface-2: rgba(22, 36, 76, 0.7);
+    --border: rgba(96, 165, 250, 0.18);
+    --border-strong: rgba(34, 211, 238, 0.45);
+    --text: #e8efff;
+    --muted: #93a6cc;
+    --cyan: #22d3ee;
+    --blue: #3b82f6;
+    --purple: #a78bfa;
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --font: 'Vazirmatn', 'Inter', system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background:
+      radial-gradient(900px 500px at 10% -10%, rgba(59, 130, 246, 0.22), transparent 60%),
+      radial-gradient(800px 500px at 110% 10%, rgba(167, 139, 250, 0.16), transparent 60%),
+      linear-gradient(180deg, var(--bg-2), var(--bg) 60%);
+    background-attachment: fixed;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--cyan); }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  .hidden { display: none !important; }
+  .mono, code, pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px clamp(14px, 4vw, 40px);
+    background: rgba(5, 11, 31, 0.78);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--text); }
+  .logo {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    color: #041022; font-weight: 800;
+  }
+  .nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* ---------- Buttons & inputs ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 40px; padding: 9px 16px;
+    border-radius: 12px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text);
+    cursor: pointer; text-decoration: none; white-space: nowrap;
+    transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .btn:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+  .btn.primary { background: linear-gradient(135deg, var(--blue), var(--cyan)); color: #04111f; border-color: transparent; font-weight: 600; }
+  .btn.danger { border-color: rgba(248, 113, 113, 0.5); color: #fecaca; background: rgba(127, 29, 29, 0.35); }
+  .btn.ghost { background: transparent; }
+  .btn.small { min-height: 34px; padding: 6px 12px; font-size: 0.9rem; border-radius: 10px; }
+  .btn.active { border-color: var(--border-strong); color: var(--cyan); }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+  .input, .select {
+    width: 100%; min-height: 42px; padding: 10px 12px;
+    border-radius: 12px; border: 1px solid var(--border);
+    background: rgba(5, 11, 31, 0.6); color: var(--text);
+  }
+  textarea.input { resize: vertical; min-height: 96px; }
+  .input::placeholder { color: #5f7399; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field > label { font-size: 0.9rem; color: var(--muted); }
+  .hint { font-size: 0.85rem; color: var(--muted); margin: 0; }
+  .error-text { color: var(--danger); font-size: 0.85rem; margin: 0; }
+  .ok-text { color: #a7f3d0; font-size: 0.85rem; margin: 0; }
+  .checkbox-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .checkbox-row input { width: 18px; height: 18px; accent-color: var(--cyan); }
+
+  /* ---------- Surfaces ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px;
+  }
+  main { max-width: 1200px; margin: 0 auto; padding: 24px clamp(14px, 4vw, 40px) 90px; }
+  .hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; padding: 24px 0 8px; }
+  .hero h1 {
+    margin: 0; font-size: clamp(1.6rem, 4vw, 2.3rem);
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p { margin: 6px 0 0; color: var(--muted); }
+  .page-title { margin: 0; font-size: 1.5rem; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 16px 0; }
+  .stat { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+  .stat .num { font-size: 1.6rem; font-weight: 700; }
+  .stat .lbl { color: var(--muted); font-size: 0.85rem; }
+
+  .notice { padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--border-strong); color: var(--muted); background: rgba(10, 20, 48, 0.5); font-size: 0.9rem; margin-bottom: 14px; }
+  .status { padding: 12px 14px; border-radius: 12px; margin-bottom: 14px; border: 1px solid var(--border); background: var(--surface-2); }
+  .status.ok { border-color: rgba(52, 211, 153, 0.4); color: #a7f3d0; }
+  .status.err { border-color: rgba(248, 113, 113, 0.5); color: #fecaca; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0 8px; align-items: center; }
+  .toolbar .input { flex: 1 1 240px; }
+  .toolbar .select { flex: 0 1 190px; width: auto; min-width: 150px; }
+
+  /* ---------- Public cards ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; margin-top: 12px; }
+  .cfg-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px; display: flex; flex-direction: column; gap: 10px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .cfg-card:hover { border-color: rgba(34, 211, 238, 0.35); transform: translateY(-2px); }
+  .cfg-name { margin: 0; font-size: 1.05rem; word-break: break-word; }
+  .cfg-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 0.88rem; }
+  .host { font-size: 0.88rem; color: var(--muted); }
+  .host code { color: var(--text); }
+  .desc { margin: 0; color: var(--muted); font-size: 0.9rem; word-break: break-word; }
+  .uri-box {
+    margin: 0; padding: 12px; border-radius: 12px; font-size: 0.8rem;
+    background: rgba(2, 6, 23, 0.7); border: 1px solid var(--border);
+    white-space: pre-wrap; word-break: break-all; max-height: 220px; overflow: auto;
+  }
+  .cfg-actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+  .cfg-actions .btn { flex: 1 1 auto; }
+
+  .badge {
+    display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px;
+    font-size: 0.78rem; font-weight: 600; letter-spacing: 0.02em;
+    border: 1px solid var(--border); background: rgba(59, 130, 246, 0.15); color: #bfdbfe;
+  }
+  .badge.vless { background: rgba(34, 211, 238, 0.14); color: #a5f3fc; border-color: rgba(34, 211, 238, 0.35); }
+  .badge.vmess { background: rgba(167, 139, 250, 0.16); color: #ddd6fe; border-color: rgba(167, 139, 250, 0.4); }
+  .badge.trojan { background: rgba(244, 114, 182, 0.14); color: #fbcfe8; border-color: rgba(244, 114, 182, 0.35); }
+  .badge.shadowsocks { background: rgba(52, 211, 153, 0.14); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.35); }
+  .badge.socks { background: rgba(251, 191, 36, 0.14); color: #fde68a; border-color: rgba(251, 191, 36, 0.35); }
+  .badge.http { background: rgba(148, 163, 184, 0.16); color: #e2e8f0; border-color: rgba(148, 163, 184, 0.35); }
+  .badge.published { background: rgba(52, 211, 153, 0.14); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.35); }
+  .badge.draft { background: rgba(251, 191, 36, 0.12); color: #fde68a; border-color: rgba(251, 191, 36, 0.35); }
+
+  .empty {
+    text-align: center; padding: 48px 20px; margin-top: 12px;
+    border: 1px dashed var(--border); border-radius: var(--radius);
+    color: var(--muted); background: rgba(10, 20, 48, 0.4);
+  }
+  .empty h3 { color: var(--text); margin: 6px 0; }
+  .empty p { margin: 0; }
+  .skeleton {
+    height: 160px; border-radius: var(--radius);
+    background: linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+    background-size: 200% 100%; animation: shimmer 1.3s infinite;
+  }
+  @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+  /* ---------- Admin ---------- */
+  .admin-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin: 22px 0 14px; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .admin-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 10px 0 12px; }
+  .admin-toolbar .input { flex: 1 1 240px; }
+  .admin-toolbar .select { flex: 0 1 180px; width: auto; min-width: 150px; }
+  .admin-list { display: flex; flex-direction: column; gap: 10px; }
+  .perm-grid { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 10px 0; }
+  .perm-grid label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .admin-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  /* Permission-based visibility. The database enforces the same rules. */
+  .perm-no-add #adminAdd, .perm-no-add #adminImport { display: none !important; }
+  .perm-no-edit [data-action="edit"], .perm-no-edit [data-action="toggle"] { display: none !important; }
+  .perm-no-delete [data-action="delete"] { display: none !important; }
+  .perm-no-review [data-action="approve"], .perm-no-review [data-action="reject"] { display: none !important; }
+  .admin-row {
+    display: grid; grid-template-columns: minmax(180px, 2fr) 1.1fr 1fr 1.2fr auto;
+    gap: 12px; align-items: center; padding: 14px 16px;
+    border-radius: 14px; background: var(--surface); border: 1px solid var(--border);
+  }
+  .admin-row .wide { grid-column: 1 / -1; }
+  .cell-title { font-weight: 600; word-break: break-word; }
+  .cell-sub { font-size: 0.82rem; color: var(--muted); word-break: break-word; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .test-result {
+    padding: 10px 12px; border-radius: 12px; font-size: 0.9rem;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--muted);
+  }
+  .badge.ping-ok { background: rgba(52, 211, 153, 0.14); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.35); }
+  .badge.ping-bad { background: rgba(248, 113, 113, 0.12); color: #fecaca; border-color: rgba(248, 113, 113, 0.35); }
+  .pager { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+  .pager .btn:disabled { opacity: 0.45; }
+  .test-result.ok { border-color: rgba(52, 211, 153, 0.4); color: #a7f3d0; }
+  .test-result.err { border-color: rgba(248, 113, 113, 0.5); color: #fecaca; }
+  @media (max-width: 1000px) {
+    .admin-row { grid-template-columns: 1fr 1fr; }
+    .row-actions { grid-column: 1 / -1; justify-content: flex-start; }
+  }
+  @media (max-width: 560px) {
+    .admin-row { grid-template-columns: 1fr; }
+  }
+
+  .auth-wrap { max-width: 440px; margin: 40px auto; display: flex; flex-direction: column; gap: 14px; }
+  .auth-wrap h2 { margin: 0; }
+  .auth-wrap form { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ---------- Modals ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+    background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    width: min(660px, 100%); max-height: 90vh; overflow: auto;
+    background: #0c1638; border: 1px solid var(--border-strong);
+    border-radius: 20px; padding: 22px; box-shadow: var(--shadow);
+    transform: translateY(10px); transition: transform 0.2s;
+  }
+  .overlay.open .modal { transform: none; }
+  .modal h2 { margin: 0 0 14px; font-size: 1.2rem; }
+  .modal form, .form-grid, form.modal { display: flex; flex-direction: column; gap: 14px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 18px; }
+  .preview { margin-top: 14px; max-height: 260px; overflow: auto; }
+  .preview-row {
+    display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: start;
+    padding: 8px 10px; margin-top: 6px; border-radius: 10px; font-size: 0.88rem;
+    background: rgba(5, 11, 31, 0.5); border: 1px solid var(--border); word-break: break-word;
+  }
+  .preview-row.valid { border-color: rgba(52, 211, 153, 0.4); }
+  .preview-row.invalid { border-color: rgba(248, 113, 113, 0.5); }
+  .preview-row.duplicate { border-color: rgba(251, 191, 36, 0.5); }
+
+  .toast-wrap {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    width: min(92vw, 440px); display: flex; flex-direction: column; gap: 8px; z-index: 60;
+  }
+  .toast {
+    padding: 12px 16px; border-radius: 12px; font-size: 0.92rem;
+    background: #0f1d43; border: 1px solid var(--border-strong); box-shadow: var(--shadow);
+    animation: rise 0.25s ease;
+  }
+  .toast.err { border-color: rgba(248, 113, 113, 0.6); }
+  .toast.ok { border-color: rgba(52, 211, 153, 0.6); }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .boot-error { max-width: 560px; margin: 60px auto; padding: 24px; }
+
+  @media (max-width: 720px) {
+    .hero { padding-top: 14px; }
+    .topbar .btn.small { padding: 6px 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="bootError" class="card boot-error hidden" role="alert">
+  <h2>خطا در بارگذاری</h2>
+  <p class="hint">کتابخانه Supabase بارگذاری نشد. اتصال اینترنت را بررسی کنید و صفحه را دوباره باز کنید.</p>
+  <p class="hint">Supabase library failed to load. Check your connection and reload the page.</p>
+  <button class="btn primary small" type="button" onclick="location.reload()">تلاش دوباره / Retry</button>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="#" aria-label="V2Ray Hub">
+    <span class="logo" aria-hidden="true">V</span>
+    <span data-i18n="appTitle">V2Ray Hub</span>
+  </a>
+  <nav class="nav" aria-label="Main">
+    <a id="navPublic" class="btn ghost small" href="#" data-i18n="navPublic">دایرکتوری</a>
+    <a id="navAdmin" class="btn ghost small" href="#admin" data-i18n="navAdmin">مدیریت</a>
+    <button id="langToggle" class="btn ghost small" type="button" data-i18n="langToggle">English</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= PUBLIC DIRECTORY ================= -->
+  <section id="publicView" aria-live="polite">
+    <div class="hero">
+      <div>
+        <h1 data-i18n="heroTitle">دایرکتوری کانفیگ‌های V2Ray</h1>
+        <p data-i18n="heroSub">کانفیگ‌های منتشرشده را جستجو، فیلتر و با یک کلیک کپی کنید.</p>
+      </div>
+      <div class="nav">
+        <button id="openSubmit" class="btn primary small" type="button" data-i18n="submitOpen">ارسال کانفیگ</button>
+        <button id="copySubLink" class="btn small" type="button" data-i18n="subLinkBtn">لینک اشتراک</button>
+        <button id="refreshPublic" class="btn small" type="button" data-i18n="refresh">به‌روزرسانی</button>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="num" id="publicStatCount">0</div><div class="lbl" data-i18n="statPublished">کانفیگ منتشرشده</div></div>
+      <div class="stat"><div class="num" id="publicStatProtocols">0</div><div class="lbl" data-i18n="statProtocols">پروتکل فعال</div></div>
+      <div class="stat"><div class="num" id="publicStatCountries">0</div><div class="lbl" data-i18n="statCountries">کشور</div></div>
+    </div>
+
+    <div class="notice" data-i18n="testNotice">هیچ کانفیگی به‌صورت خودکار آزمایش نمی‌شود؛ سلامت و در دسترس بودن آن‌ها تضمین نشده است.</div>
+
+    <div class="toolbar">
+      <input id="publicSearch" class="input" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="جستجو بر اساس نام، هاست یا پروتکل…" autocomplete="off" />
+      <select id="publicProtocol" class="select" aria-label="Protocol"></select>
+      <select id="publicCountry" class="select" aria-label="Country"></select>
+    </div>
+    <div id="publicResultInfo" class="hint"></div>
+
+    <div id="publicStatus" class="status hidden" role="status"></div>
+    <div id="publicList" class="grid"></div>
+    <div id="publicPager"></div>
+    <div id="publicEmpty" class="empty hidden"></div>
+  </section>
+
+  <!-- ================= ADMIN ================= -->
+  <section id="adminView" class="hidden">
+
+    <!-- Login -->
+    <div id="loginCard" class="card auth-wrap hidden">
+      <h2 data-i18n="loginTitle">ورود مدیر</h2>
+      <p class="hint" data-i18n="loginHint">فقط حساب‌های مجاز مدیریت امکان ورود به این بخش را دارند.</p>
+      <div id="loginNotice" class="status err hidden"></div>
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="loginEmail" data-i18n="email">ایمیل</label>
+          <input id="loginEmail" class="input" type="email" autocomplete="username" dir="ltr" required />
+        </div>
+        <div class="field">
+          <label for="loginPassword" data-i18n="password">رمز عبور</label>
+          <input id="loginPassword" class="input" type="password" autocomplete="current-password" dir="ltr" required />
+        </div>
+        <div id="loginError" class="error-text hidden" role="alert"></div>
+        <button id="loginBtn" class="btn primary" type="submit" data-i18n="signIn">ورود</button>
+      </form>
+      <a class="btn ghost small" href="#" data-i18n="backToPublic">بازگشت به وب‌سایت</a>
+    </div>
+
+    <!-- Signed in, but not an administrator -->
+    <div id="deniedCard" class="card auth-wrap hidden">
+      <h2 data-i18n="notAdminTitle">دسترسی مجاز نیست</h2>
+      <p class="hint" data-i18n="notAdminText">این حساب کاربری به‌عنوان مدیر تأیید نشده است.</p>
+      <p id="deniedDetail" class="error-text hidden"></p>
+      <div class="modal-actions" style="justify-content:flex-start">
+        <button id="deniedLogout" class="btn danger" type="button" data-i18n="logout">خروج</button>
+        <a class="btn ghost small" href="#" data-i18n="backToPublic">بازگشت به وب‌سایت</a>
+      </div>
+    </div>
+
+    <!-- Admin panel -->
+    <div id="adminPanel" class="hidden">
+      <div class="admin-head">
+        <div>
+          <h1 class="page-title" data-i18n="adminTitle">پنل مدیریت</h1>
+          <p class="hint" data-i18n="adminSub">افزودن، ویرایش، انتشار و حذف کانفیگ‌ها.</p>
+        </div>
+        <div class="nav">
+          <a class="btn small ghost" href="#" data-i18n="backToPublic">بازگشت به وب‌سایت</a>
+          <button id="adminRefresh" class="btn small" type="button" data-i18n="refresh">به‌روزرسانی</button>
+          <button id="adminLogout" class="btn small danger" type="button" data-i18n="logout">خروج</button>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button id="tabConfigs" class="btn small active" type="button" data-i18n="tabConfigs">کانفیگ‌های منتشرشده</button>
+        <button id="tabSubs" class="btn small" type="button">
+          <span data-i18n="tabSubs">درخواست‌های کاربران</span>
+          <span id="pendingBadge" class="badge draft">0</span>
+        </button>
+        <button id="tabAdmins" class="btn small hidden" type="button" data-i18n="tabAdmins">مدیران</button>
+        <button id="tabReports" class="btn small hidden" type="button" data-i18n="tabReports">گزارش‌ها</button>
+      </div>
+
+      <div id="adminStatus" class="status hidden" role="status"></div>
+
+      <!-- Administrators tab (owner only) -->
+      <div id="adminsSection" class="hidden">
+        <div class="card">
+          <h2 data-i18n="newAdminTitle">افزودن مدیر جدید</h2>
+          <p class="hint" data-i18n="adminsHint">فقط مالک می‌تواند مدیر اضافه یا حذف کند. نام کاربری همان ایمیل است.</p>
+          <form id="adminCreateForm" novalidate>
+            <div class="field">
+              <label for="newAdminEmail" data-i18n="email">ایمیل (نام کاربری)</label>
+              <input id="newAdminEmail" class="input" type="email" dir="ltr" autocomplete="off" required />
+            </div>
+            <div class="field">
+              <label for="newAdminPassword" data-i18n="password">رمز عبور</label>
+              <input id="newAdminPassword" class="input" type="password" dir="ltr" autocomplete="new-password" required />
+            </div>
+            <div class="perm-grid">
+              <label><input id="newPermAdd" type="checkbox" checked /> <span data-i18n="permAdd">افزودن کانفیگ</span></label>
+              <label><input id="newPermEdit" type="checkbox" checked /> <span data-i18n="permEdit">ویرایش و انتشار</span></label>
+              <label><input id="newPermDelete" type="checkbox" /> <span data-i18n="permDelete">حذف</span></label>
+              <label><input id="newPermReview" type="checkbox" checked /> <span data-i18n="permReview">تأیید و رد درخواست‌ها</span></label>
+            </div>
+            <div id="adminCreateError" class="error-text hidden" role="alert"></div>
+            <button id="adminCreateBtn" class="btn primary" type="submit" data-i18n="adminCreate">ساخت مدیر</button>
+          </form>
+        </div>
+        <div id="adminsList" class="admin-list"></div>
+      </div>
+
+      <!-- Reports tab (reviewers) -->
+      <div id="reportsSection" class="hidden">
+        <p class="hint" data-i18n="reportsHint">کانفیگ‌هایی که کاربران خراب گزارش کرده‌اند.</p>
+        <div id="reportsList" class="admin-list"></div>
+      </div>
+
+      <!-- Configurations tab -->
+      <div id="configsSection">
+        <div class="stat-row">
+          <div class="stat"><div class="num" id="adminStatTotal">0</div><div class="lbl" data-i18n="adminStatTotal">کل کانفیگ‌ها</div></div>
+          <div class="stat"><div class="num" id="adminStatPublished">0</div><div class="lbl" data-i18n="adminStatPublished">منتشرشده</div></div>
+          <div class="stat"><div class="num" id="adminStatUnpublished">0</div><div class="lbl" data-i18n="adminStatUnpublished">منتشرنشده</div></div>
+        </div>
+
+        <div class="admin-toolbar">
+          <input id="adminSearch" class="input" type="search" data-i18n-placeholder="adminSearchPlaceholder" placeholder="جستجو…" autocomplete="off" />
+          <select id="adminStatusFilter" class="select" aria-label="Status"></select>
+          <select id="adminProtocolFilter" class="select" aria-label="Protocol"></select>
+        </div>
+        <div class="admin-toolbar">
+          <button id="adminAdd" class="btn primary" type="button" data-i18n="addConfig">افزودن کانفیگ</button>
+          <button id="adminImport" class="btn" type="button" data-i18n="importConfigs">ایمپورت از متن</button>
+          <span id="adminResultInfo" class="hint"></span>
+        </div>
+
+        <div id="adminList" class="admin-list"></div>
+        <div id="adminPager"></div>
+        <div id="adminEmpty" class="empty hidden"></div>
+      </div>
+
+      <!-- Submissions tab -->
+      <div id="submissionsSection" class="hidden">
+        <p class="hint" style="margin-bottom:12px" data-i18n="subsHint">کانفیگ‌های ارسالی کاربران اینجا هستند. با «تأیید و انتشار» کانفیگ منتشر می‌شود و با «رد» حذف از صف می‌شود.</p>
+        <div id="subsList" class="admin-list"></div>
+        <div id="subsEmpty" class="empty hidden"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= PUBLIC SUBMIT MODAL ================= -->
+<div id="submitOverlay" class="overlay" aria-hidden="true">
+  <form id="submitForm" class="modal" role="dialog" aria-modal="true" aria-labelledby="submitTitle" novalidate>
+    <h2 id="submitTitle" data-i18n="submitTitle">ارسال کانفیگ</h2>
+    <p class="hint" data-i18n="submitNote">کانفیگ شما پس از بررسی مدیر منتشر می‌شود. لطفاً فقط کانفیگی را ارسال کنید که خودتان ساخته یا مجاز به انتشار آن هستید.</p>
+    <div class="field">
+      <label for="subName" data-i18n="fName">نام کانفیگ *</label>
+      <input id="subName" class="input" maxlength="200" autocomplete="off" />
+      <p id="errSubName" class="error-text hidden"></p>
+    </div>
+    <div class="field">
+      <label for="subUri" data-i18n="fUri">آدرس کامل کانفیگ *</label>
+      <textarea id="subUri" class="input mono" rows="3" dir="ltr" spellcheck="false" autocomplete="off"></textarea>
+      <p id="subDetected" class="hint"></p>
+      <p id="errSubUri" class="error-text hidden"></p>
+    </div>
+    <div class="field">
+      <label for="subCountry" data-i18n="fCountry">کشور (اختیاری)</label>
+      <input id="subCountry" class="input" maxlength="100" autocomplete="off" />
+      <p id="errSubCountry" class="error-text hidden"></p>
+    </div>
+    <div class="field">
+      <label for="subDesc" data-i18n="fDescription">توضیحات (اختیاری)</label>
+      <textarea id="subDesc" class="input" rows="2" maxlength="1000"></textarea>
+      <p id="errSubDesc" class="error-text hidden"></p>
+    </div>
+    <p id="subError" class="error-text hidden" role="alert"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn ghost" data-close data-i18n="cancel">انصراف</button>
+      <button id="subSave" type="submit" class="btn primary" data-i18n="submitBtn">ارسال</button>
+    </div>
+  </form>
+</div>
+
+<!-- ================= ADD / EDIT MODAL ================= -->
+<div id="configOverlay" class="overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="configTitle">
+    <h2 id="configTitle">افزودن کانفیگ جدید</h2>
+    <form id="configForm" novalidate>
+      <div class="field">
+        <label for="cfgName" data-i18n="fName">نام کانفیگ *</label>
+        <input id="cfgName" class="input" maxlength="200" autocomplete="off" />
+        <p id="errName" class="error-text hidden"></p>
+      </div>
+      <div class="field">
+        <label for="cfgUri" data-i18n="fUri">آدرس کامل کانفیگ *</label>
+        <textarea id="cfgUri" class="input mono" rows="3" dir="ltr" spellcheck="false" autocomplete="off"></textarea>
+        <p id="cfgDetected" class="hint"></p>
+        <p id="errUri" class="error-text hidden"></p>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="cfgProtocol" data-i18n="fProtocol">پروتکل</label>
+          <select id="cfgProtocol" class="select"></select>
+        </div>
+        <div class="field">
+          <label for="cfgCountry" data-i18n="fCountry">کشور (اختیاری)</label>
+          <input id="cfgCountry" class="input" maxlength="100" autocomplete="off" />
+          <p id="errCountry" class="error-text hidden"></p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="cfgDesc" data-i18n="fDescription">توضیحات (اختیاری)</label>
+        <textarea id="cfgDesc" class="input" rows="2" maxlength="1000"></textarea>
+        <p id="errDesc" class="error-text hidden"></p>
+      </div>
+      <label class="checkbox-row">
+        <input id="cfgPublished" type="checkbox" />
+        <span data-i18n="publishedStatus">منتشر شود</span>
+      </label>
+      <p id="cfgError" class="error-text hidden" role="alert"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" data-close data-i18n="cancel">انصراف</button>
+        <button id="cfgSave" type="submit" class="btn primary" data-i18n="save">ذخیره</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= IMPORT MODAL ================= -->
+<div id="importOverlay" class="overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+    <h2 id="importTitle" data-i18n="importTitle">ایمپورت گروهی</h2>
+    <p class="hint" data-i18n="importHint">هر خط یک کانفیگ. خطوط خالی و خطوطی که با # شروع شوند نادیده گرفته می‌شوند.</p>
+    <textarea id="importText" class="input mono" rows="8" dir="ltr" spellcheck="false" data-i18n-placeholder="importPlaceholder" placeholder="vless://…"></textarea>
+    <label class="checkbox-row">
+      <input id="importPublish" type="checkbox" />
+      <span data-i18n="importPublish">کانفیگ‌ها منتشر شوند</span>
+    </label>
+    <div id="importPreview" class="preview"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn ghost" data-close data-i18n="cancel">انصراف</button>
+      <button id="importPreviewBtn" type="button" class="btn" data-i18n="importPreview">پیش‌نمایش و اعتبارسنجی</button>
+      <button id="importRun" type="button" class="btn primary" disabled data-i18n="importRun">ایمپورت</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= CONFIRM MODAL ================= -->
+<div id="confirmOverlay" class="overlay" aria-hidden="true">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle"></h2>
+    <p id="confirmText" class="hint"></p>
+    <div class="modal-actions">
+      <button id="confirmNo" type="button" class="btn ghost"></button>
+      <button id="confirmYes" type="button" class="btn danger"></button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts" class="toast-wrap" aria-live="polite"></div>
+
+<script>
+(async function () {
+  'use strict';
+
+  // ------------------------------------------------------------------
+  // Library loading with fallback CDNs (some networks block one CDN).
+  // ------------------------------------------------------------------
+  const SUPABASE_SCRIPTS = [
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js',
+    'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js',
+  ];
+
+  function loadScript(url) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = url;
+      s.async = true;
+      const timer = setTimeout(() => { s.remove(); reject(new Error('timeout')); }, 10000);
+      s.onload = () => { clearTimeout(timer); resolve(); };
+      s.onerror = () => { clearTimeout(timer); s.remove(); reject(new Error('load failed')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function ensureLibrary(urls, isReady) {
+    if (isReady()) return true;
+    for (const url of urls) {
+      try {
+        await loadScript(url);
+        if (isReady()) return true;
+      } catch (_) { /* try the next source */ }
+    }
+    return false;
+  }
+
+  const supabaseReady = await ensureLibrary(
+    SUPABASE_SCRIPTS,
+    () => !!(window.supabase && typeof window.supabase.createClient === 'function')
+  );
+  const bootError = document.getElementById('bootError');
+  if (!supabaseReady) {
+    bootError.classList.remove('hidden');
+    return;
+  }
+
+  // ------------------------------------------------------------------
+  // Configuration: publishable key only. NEVER put a service_role key here.
+  // ------------------------------------------------------------------
+  const SUPABASE_URL = 'https://sdikmzwemzwxxwfwplht.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lec6hVyNJsHEx-KxE8Z02w_7dDJ64vk';
+  const TABLE = 'v2rayhub_configs';
+  const SUBS_TABLE = 'v2rayhub_submissions';
+  const ADMIN_CHECK_RPC = 'v2rayhub_is_admin';
+  const MY_PERMS_RPC = 'v2rayhub_my_permissions';
+  const ADMINS_FUNCTION = 'v2rayhub-admins';
+  const REPORTS_TABLE = 'v2rayhub_reports';
+  const PERM_KEYS = ['can_add', 'can_edit', 'can_delete', 'can_review'];
+  const PERM_LABEL_KEYS = { can_add: 'permAdd', can_edit: 'permEdit', can_delete: 'permDelete', can_review: 'permReview' };
+  const NEW_PERM_IDS = { can_add: 'newPermAdd', can_edit: 'newPermEdit', can_delete: 'newPermDelete', can_review: 'newPermReview' };
+  const APPROVE_RPC = 'v2rayhub_approve_submission';
+  const TEST_FUNCTION = 'v2rayhub-test';
+  const SUB_FUNCTION = 'v2rayhub-sub';
+  // Only explicit columns are requested (created_by is never exposed to the API).
+  const PUBLIC_COLUMNS = 'id,name,config_uri,protocol,country,description,created_at,updated_at,country_code,latency_ms,last_status,last_checked_at';
+  const ADMIN_COLUMNS = 'id,name,config_uri,protocol,country,description,is_published,created_at,updated_at,country_code,latency_ms,last_status,last_checked_at';
+  const SUB_COLUMNS = 'id,name,config_uri,protocol,country,description,status,created_at';
+
+  const PROTOCOLS = ['vless', 'vmess', 'trojan', 'shadowsocks', 'socks', 'http'];
+  const PROTOCOL_LABEL = {
+    vless: 'VLESS', vmess: 'VMess', trojan: 'Trojan',
+    shadowsocks: 'Shadowsocks', socks: 'SOCKS', http: 'HTTP',
+  };
+  const SCHEME_TO_PROTOCOL = {
+    vless: 'vless', vmess: 'vmess', trojan: 'trojan', ss: 'shadowsocks', socks: 'socks', http: 'http',
+  };
+  const MAX_URI_LENGTH = 8000;
+  const MAX_IMPORT_LINES = 500;
+  const IMPORT_CHUNK = 50;
+  const SUBMIT_COOLDOWN_MS = 30000;
+  const LAST_SUBMIT_KEY = 'v2rayhub.lastSubmit';
+  const PUBLIC_PAGE_SIZE = 12;
+  const ADMIN_PAGE_SIZE = 20;
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
+  });
+
+  // ------------------------------------------------------------------
+  // Translations: [Persian, English]
+  // ------------------------------------------------------------------
+  const T = {
+    appTitle: ['V2Ray Hub', 'V2Ray Hub'],
+    navPublic: ['دایرکتوری', 'Directory'],
+    navAdmin: ['مدیریت', 'Admin'],
+    langToggle: ['English', 'فارسی'],
+    heroTitle: ['دایرکتوری کانفیگ‌های V2Ray', 'V2Ray configuration directory'],
+    heroSub: ['کانفیگ‌های منتشرشده را جستجو، فیلتر و با یک کلیک کپی کنید.', 'Search, filter and copy published configurations with one click.'],
+    refresh: ['به‌روزرسانی', 'Refresh'],
+    statPublished: ['کانفیگ منتشرشده', 'Published configs'],
+    statProtocols: ['پروتکل فعال', 'Active protocols'],
+    statCountries: ['کشور', 'Countries'],
+    testNotice: ['هیچ کانفیگی به‌صورت خودکار آزمایش نمی‌شود؛ سلامت و در دسترس بودن آن‌ها تضمین نشده است.', 'Configurations are not tested automatically; their health and availability are not guaranteed.'],
+    searchPlaceholder: ['جستجو بر اساس نام، هاست یا پروتکل…', 'Search by name, host or protocol…'],
+    allProtocols: ['همه پروتکل‌ها', 'All protocols'],
+    allCountries: ['همه کشورها', 'All countries'],
+    loading: ['در حال بارگذاری…', 'Loading…'],
+    emptyTitle: ['هنوز کانفیگی منتشر نشده است', 'No configurations published yet'],
+    emptyText: ['به‌زودی کانفیگ‌های جدید اضافه می‌شوند.', 'New configurations will appear here soon.'],
+    noMatch: ['نتیجه‌ای با این فیلترها پیدا نشد.', 'No results match these filters.'],
+    showingCount: ['{count} مورد نمایش داده می‌شود', 'Showing {count} item(s)'],
+    show: ['نمایش کانفیگ', 'Show config'],
+    hide: ['پنهان‌کردن', 'Hide config'],
+    copy: ['کپی', 'Copy'],
+    copied: ['کانفیگ در کلیپ‌بورد کپی شد.', 'Configuration copied to clipboard.'],
+    copyFailed: ['کپی انجام نشد. کانفیگ را نمایش دهید و به‌صورت دستی کپی کنید.', 'Copy failed. Show the configuration and copy it manually.'],
+    tabAdmins: ['مدیران', 'Admins'],
+    adminsHint: ['فقط مالک می‌تواند مدیر اضافه یا حذف کند. نام کاربری همان ایمیل است.', 'Only the owner can add or remove admins. The username is the email.'],
+    newAdminTitle: ['افزودن مدیر جدید', 'Add a new admin'],
+    adminCreate: ['ساخت مدیر', 'Create admin'],
+    permAdd: ['افزودن کانفیگ', 'Add configs'],
+    permEdit: ['ویرایش و انتشار', 'Edit and publish'],
+    permDelete: ['حذف', 'Delete'],
+    permReview: ['تأیید و رد درخواست‌ها', 'Review submissions'],
+    adminRemove: ['حذف دسترسی', 'Remove access'],
+    adminRemoveText: ['حساب {email} حذف شود؟ دیگر نمی‌تواند وارد شود.', 'Delete the account {email}? It will no longer be able to sign in.'],
+    adminSaved: ['ذخیره شد', 'Saved'],
+    adminNone: ['هنوز مدیری ثبت نشده است.', 'No admins yet.'],
+    owner: ['مالک', 'Owner'],
+    passwordShort: ['رمز باید حداقل ۸ کاراکتر باشد.', 'Password must be at least 8 characters.'],
+    subLinkBtn: ['لینک اشتراک', 'Subscription link'],
+    reportBtn: ['گزارش خرابی', 'Report broken'],
+    reported: ['گزارش شد ✓', 'Reported ✓'],
+    reportedAlready: ['قبلاً این کانفیگ را گزارش کرده‌اید.', 'You already reported this configuration.'],
+    reportThanks: ['ممنون، گزارش ثبت شد.', 'Thanks, your report was recorded.'],
+    reportFailed: ['ثبت گزارش انجام نشد.', 'Could not record the report.'],
+    tabReports: ['گزارش‌ها', 'Reports'],
+    reportsHint: ['کانفیگ‌هایی که کاربران خراب گزارش کرده‌اند.', 'Configurations that visitors reported as broken.'],
+    reportsNone: ['گزارشی ثبت نشده است.', 'No reports.'],
+    reportCount: ['{n} گزارش', '{n} reports'],
+    lastReport: ['آخرین گزارش', 'Last report'],
+    clearReports: ['پاک کردن گزارش‌ها', 'Clear reports'],
+    clearReportsText: ['گزارش‌های {name} پاک شود؟', 'Clear the reports for {name}?'],
+    reportsClearedOk: ['گزارش‌ها پاک شد', 'Reports cleared'],
+    host: ['هاست', 'Host'],
+    created: ['ایجاد', 'Created'],
+    updated: ['آخرین تغییر', 'Updated'],
+    backToPublic: ['بازگشت به وب‌سایت', 'Back to website'],
+    adminTitle: ['پنل مدیریت', 'Admin panel'],
+    adminSub: ['افزودن، ویرایش، انتشار و حذف کانفیگ‌ها.', 'Add, edit, publish and delete configurations.'],
+    logout: ['خروج', 'Sign out'],
+    loginTitle: ['ورود مدیر', 'Administrator sign in'],
+    loginHint: ['فقط حساب‌های مجاز مدیریت امکان ورود به این بخش را دارند.', 'Only explicitly authorized accounts can access this panel.'],
+    email: ['ایمیل', 'Email'],
+    password: ['رمز عبور', 'Password'],
+    signIn: ['ورود', 'Sign in'],
+    signingIn: ['در حال ورود…', 'Signing in…'],
+    loginRequired: ['ایمیل و رمز عبور را وارد کنید.', 'Enter your email and password.'],
+    loginFailed: ['ایمیل یا رمز عبور نادرست است.', 'Incorrect email or password.'],
+    notAdminTitle: ['دسترسی مجاز نیست', 'Access denied'],
+    notAdminText: ['این حساب کاربری به‌عنوان مدیر تأیید نشده است.', 'This account is not authorized as an administrator.'],
+    sessionExpired: ['نشست شما منقضی شده است. لطفاً دوباره وارد شوید.', 'Your session has expired. Please sign in again.'],
+    permissionDenied: ['دسترسی لازم برای این عملیات وجود ندارد.', 'You do not have permission for this action.'],
+    notFound: ['رکورد پیدا نشد یا اجازه تغییر آن وجود ندارد.', 'Record not found or you are not allowed to change it.'],
+    alreadyReviewed: ['این درخواست قبلاً بررسی شده است.', 'This submission has already been reviewed.'],
+    err_network: ['اتصال به سرور برقرار نشد. اینترنت را بررسی کنید و دوباره تلاش کنید.', 'Could not reach the server. Check your connection and try again.'],
+    err_load: ['خطا در دریافت اطلاعات. لطفاً دوباره تلاش کنید.', 'Could not load data. Please try again.'],
+    adminStatTotal: ['کل کانفیگ‌ها', 'Total'],
+    adminStatPublished: ['منتشرشده', 'Published'],
+    adminStatUnpublished: ['منتشرنشده', 'Unpublished'],
+    statusAll: ['همه وضعیت‌ها', 'All statuses'],
+    statusPublished: ['منتشرشده', 'Published'],
+    statusUnpublished: ['منتشرنشده', 'Unpublished'],
+    badgePublished: ['منتشرشده', 'Published'],
+    badgeDraft: ['منتشرنشده', 'Unpublished'],
+    addConfig: ['افزودن کانفیگ', 'Add configuration'],
+    importConfigs: ['ایمپورت از متن', 'Import from text'],
+    actionEdit: ['ویرایش', 'Edit'],
+    actionDelete: ['حذف', 'Delete'],
+    actionPublish: ['انتشار', 'Publish'],
+    actionUnpublish: ['لغو انتشار', 'Unpublish'],
+    actionApprove: ['تأیید و انتشار', 'Approve & publish'],
+    actionReject: ['رد', 'Reject'],
+    adminEmptyTitle: ['هنوز کانفیگی ثبت نشده است', 'No configurations yet'],
+    adminEmptyText: ['با دکمه «افزودن کانفیگ» شروع کنید.', 'Start with the "Add configuration" button.'],
+    adminSearchPlaceholder: ['جستجو در نام، هاست، کشور یا پروتکل…', 'Search name, host, country or protocol…'],
+    tabConfigs: ['کانفیگ‌های منتشرشده', 'Configurations'],
+    tabSubs: ['درخواست‌های کاربران', 'User submissions'],
+    subsHint: ['کانفیگ‌های ارسالی کاربران اینجا هستند. با «تأیید و انتشار» کانفیگ منتشر می‌شود و با «رد» حذف از صف می‌شود.', 'User-submitted configurations appear here. "Approve & publish" publishes it; "Reject" removes it from the queue.'],
+    subsEmptyTitle: ['درخواست جدیدی وجود ندارد', 'No pending submissions'],
+    subsEmptyText: ['وقتی کاربری کانفیگ ارسال کند، اینجا نمایش داده می‌شود.', 'When someone submits a configuration, it will appear here.'],
+    test: ['تست', 'Test'],
+    testRunning: ['در حال تست اتصال…', 'Testing connection…'],
+    testReachable: ['پورت باز است و اتصال TCP برقرار شد ({ms} ms).', 'The port is open and a TCP connection succeeded ({ms} ms).'],
+    testUnreachable: ['اتصال برقرار نشد.', 'Could not connect.'],
+    testFailed: ['تست انجام نشد. Edge Function با نام «v2rayhub-test» را بررسی کنید.', 'Test could not run. Check the Edge Function named "v2rayhub-test".'],
+    testNoPort: ['پورت در آدرس کانفیگ مشخص نیست؛ تست ممکن نیست.', 'No port in the configuration; the test cannot run.'],
+    testDisclaimer: ['این تست فقط بررسی می‌کند که پورت باز است؛ صحت تنظیمات پروتکل را تأیید نمی‌کند.', 'This test only checks that the port accepts connections; it does not verify the protocol settings.'],
+    approvedOk: ['درخواست تأیید و کانفیگ منتشر شد.', 'Submission approved and published.'],
+    rejectedOk: ['درخواست رد شد.', 'Submission rejected.'],
+    rejectTitle: ['رد درخواست؟', 'Reject submission?'],
+    rejectText: ['درخواست «{name}» رد می‌شود و از صف حذف می‌شود.', '"{name}" will be rejected and removed from the queue.'],
+    rejectYes: ['بله، رد شود', 'Yes, reject'],
+    submitOpen: ['ارسال کانفیگ', 'Submit a configuration'],
+    submitTitle: ['ارسال کانفیگ', 'Submit a configuration'],
+    submitNote: ['کانفیگ شما پس از بررسی مدیر منتشر می‌شود. لطفاً فقط کانفیگی را ارسال کنید که خودتان ساخته یا مجاز به انتشار آن هستید.', 'Your configuration will be published after the administrator reviews it. Only submit configurations you created or are allowed to publish.'],
+    submitBtn: ['ارسال', 'Submit'],
+    submitted: ['ثبت شد. پس از بررسی مدیر منتشر می‌شود.', 'Submitted. It will be published after review.'],
+    submitWait: ['لطفاً کمی صبر کنید و دوباره ارسال کنید.', 'Please wait a moment before submitting again.'],
+    submitLimit: ['فعلاً صف بررسی پر است. بعداً دوباره تلاش کنید.', 'The review queue is full right now. Please try again later.'],
+    fName: ['نام کانفیگ *', 'Configuration name *'],
+    fUri: ['آدرس کامل کانفیگ *', 'Full configuration URI *'],
+    fProtocol: ['پروتکل', 'Protocol'],
+    protocolAuto: ['تشخیص خودکار', 'Auto-detect'],
+    fCountry: ['کشور (اختیاری)', 'Country (optional)'],
+    fDescription: ['توضیحات (اختیاری)', 'Description (optional)'],
+    publishedStatus: ['منتشر شود', 'Publish now'],
+    detectedAs: ['پروتکل تشخیص‌داده‌شده: {p}', 'Detected protocol: {p}'],
+    cancel: ['انصراف', 'Cancel'],
+    save: ['ذخیره', 'Save'],
+    saving: ['در حال ذخیره…', 'Saving…'],
+    saved: ['کانفیگ ذخیره شد.', 'Configuration saved.'],
+    publishedOk: ['کانفیگ منتشر شد.', 'Configuration published.'],
+    unpublishedOk: ['انتشار کانفیگ لغو شد.', 'Configuration unpublished.'],
+    deleted: ['کانفیگ حذف شد.', 'Configuration deleted.'],
+    nameRequired: ['نام کانفیگ الزامی است.', 'Configuration name is required.'],
+    nameTooLong: ['نام کانفیگ بیش از ۲۰۰ نویسه است.', 'Name must be 200 characters or fewer.'],
+    countryTooLong: ['نام کشور بیش از ۱۰۰ نویسه است.', 'Country must be 100 characters or fewer.'],
+    descTooLong: ['توضیحات بیش از ۱۰۰۰ نویسه است.', 'Description must be 1000 characters or fewer.'],
+    duplicate: ['این کانفیگ قبلاً ثبت شده است.', 'This configuration already exists.'],
+    duplicateNamed: ['این کانفیگ قبلاً ثبت شده است: {name}', 'This configuration already exists: {name}'],
+    invalidData: ['داده‌ها معتبر نیستند. ورودی‌ها را بررسی کنید.', 'The data is invalid. Check your input.'],
+    deleteTitle: ['حذف کانفیگ؟', 'Delete configuration?'],
+    deleteText: ['این کار قابل بازگشت نیست. کانفیگ «{name}» برای همیشه حذف می‌شود.', 'This cannot be undone. "{name}" will be permanently deleted.'],
+    deleteYes: ['بله، حذف شود', 'Yes, delete'],
+    importTitle: ['ایمپورت گروهی', 'Bulk import'],
+    importHint: ['هر خط یک کانفیگ. خطوط خالی و خطوطی که با # شروع شوند نادیده گرفته می‌شوند.', 'One configuration per line. Empty lines and lines starting with # are ignored.'],
+    importPlaceholder: ['vless://…\nvmess://…\ntrojan://…', 'vless://…\nvmess://…\ntrojan://…'],
+    importPublish: ['کانفیگ‌ها منتشر شوند', 'Publish imported configurations'],
+    importPreview: ['پیش‌نمایش و اعتبارسنجی', 'Preview & validate'],
+    importRun: ['ایمپورت', 'Import'],
+    importNone: ['هیچ خط کانفیگی پیدا نشد.', 'No configuration lines found.'],
+    importTooMany: ['حداکثر ۵۰۰ خط در هر بار قابل ایمپورت است.', 'Up to 500 lines can be imported at once.'],
+    importDuplicate: ['تکراری (قبلاً ثبت شده)', 'Duplicate (already saved)'],
+    importDupInPaste: ['تکراری در همین متن', 'Duplicate within this text'],
+    importSummary: ['{valid} مورد آماده از {total} خط', '{valid} of {total} lines ready'],
+    importRunning: ['در حال ایمپورت…', 'Importing…'],
+    importDone: ['ایمپورت انجام شد: {ok} ذخیره، {fail} ناموفق.', 'Import finished: {ok} saved, {fail} failed.'],
+    err_no_scheme: ['آدرس باید با یکی از پیشوندهای پشتیبانی‌شده شروع شود (vless://، vmess://…).', 'The URI must start with a supported scheme (vless://, vmess://, …).'],
+    err_unsupported_scheme: ['این نوع آدرس پشتیبانی نمی‌شود.', 'This URI scheme is not supported.'],
+    err_whitespace: ['آدرس کانفیگ نباید فاصله یا خط جدید داشته باشد.', 'The URI must not contain spaces or line breaks.'],
+    err_too_long: ['آدرس کانفیگ بیش از حد طولانی است.', 'The URI is too long.'],
+    err_no_host: ['آدرس سرور (هاست) در کانفیگ پیدا نشد.', 'No server host found in the configuration.'],
+    err_bad_port: ['پورت کانفیگ معتبر نیست.', 'The port in the configuration is invalid.'],
+    err_parse: ['ساختار کانفیگ نامعتبر است.', 'The configuration structure is invalid.'],
+    uriRequired: ['آدرس کامل کانفیگ الزامی است.', 'The full configuration URI is required.'],
+    prev: ['قبلی', 'Previous'],
+    next: ['بعدی', 'Next'],
+    pageInfo: ['صفحه {page} از {pages}', 'Page {page} of {pages}'],
+    pingUnknown: ['تست نشده', 'Not tested'],
+    pingUnreachable: ['بدون پاسخ', 'No response'],
+    pingBlocked: ['آدرس نامعتبر', 'Invalid address'],
+  };
+
+  // ------------------------------------------------------------------
+  // State
+  // ------------------------------------------------------------------
+  const state = {
+    lang: 'fa',
+    view: 'public',
+    publicConfigs: [],
+    publicLoading: true,
+    adminConfigs: [],
+    submissions: [],
+    adminTab: 'configs',
+    expanded: new Set(),
+    publicPage: 1,
+    adminPage: 1,
+    isAdmin: false,
+    isOwner: false,
+    perms: null,
+    admins: [],
+    reportGroups: [],
+    userId: null,
+    busy: false,
+    userLoggingOut: false,
+    gateNoticeKey: '',
+    editingId: null,
+    confirmResolve: null,
+    importRows: [],
+  };
+  try {
+    const saved = localStorage.getItem('v2rayhub.lang');
+    if (saved === 'en' || saved === 'fa') state.lang = saved;
+  } catch (_) { /* storage may be unavailable */ }
+
+  const $ = (id) => document.getElementById(id);
+
+  function t(key, vars) {
+    const pair = T[key] || [key, key];
+    let text = pair[state.lang === 'en' ? 1 : 0];
+    if (vars) text = text.replace(/\{(\w+)\}/g, (_, k) => (vars[k] !== undefined ? vars[k] : ''));
+    return text;
+  }
+
+  function esc(value) {
+    return String(value === undefined || value === null ? '' : value).replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+  }
+
+  function fmtDate(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString(state.lang === 'en' ? 'en-US' : 'fa-IR', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+
+  function safeDecode(value) {
+    try { return decodeURIComponent(value); } catch (_) { return value; }
+  }
+
+  // ------------------------------------------------------------------
+  // URI parsing and validation
+  // ------------------------------------------------------------------
+  function b64decode(input) {
+    let s = String(input).replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
+    while (s.length % 4) s += '=';
+    const binary = atob(s);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  }
+
+  function toPort(value) {
+    if (value === undefined || value === null || value === '') return null;
+    const n = Number(value);
+    return Number.isInteger(n) && n > 0 && n < 65536 ? n : false;
+  }
+
+  function finish(uri, protocol, host, port, name) {
+    if (!host) return { ok: false, error: 'err_no_host' };
+    if (port === false) return { ok: false, error: 'err_bad_port' };
+    return {
+      ok: true,
+      uri,
+      protocol,
+      host,
+      port,
+      name: String(name || '').trim().slice(0, 200),
+    };
+  }
+
+  // Generic "scheme://[userinfo@]host[:port][/path][?query][#name]" splitter.
+  // Handles base64 userinfo containing "/", which WHATWG URL would misparse.
+  function parseAuthority(uri) {
+    const rest = uri.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '');
+    const hashIdx = rest.indexOf('#');
+    const fragment = hashIdx >= 0 ? rest.slice(hashIdx + 1) : '';
+    const noFragment = hashIdx >= 0 ? rest.slice(0, hashIdx) : rest;
+    const queryIdx = noFragment.indexOf('?');
+    const noQuery = queryIdx >= 0 ? noFragment.slice(0, queryIdx) : noFragment;
+    const at = noQuery.lastIndexOf('@');
+    const afterAt = at >= 0 ? noQuery.slice(at + 1) : noQuery;
+    const authority = afterAt.split('/')[0];
+    const m = /^(\[[^\]]+\]|[^:\[\]]*)(?::(\d*))?$/.exec(authority);
+    if (!m) return null;
+    return { host: m[1], port: m[2] || '', fragment: safeDecode(fragment) };
+  }
+
+  function parseVmess(uri, protocol) {
+    const body = uri.slice('vmess://'.length).split('#')[0];
+    const json = JSON.parse(b64decode(body));
+    if (!json || typeof json !== 'object') return { ok: false, error: 'err_parse' };
+    const host = String(json.add || '').trim();
+    return finish(uri, protocol, host, toPort(json.port), json.ps);
+  }
+
+  function parseShadowsocks(uri, protocol) {
+    const body = uri.slice('ss://'.length).split(/[#?]/)[0];
+    let normalized = uri;
+    // Legacy form: ss://BASE64(method:password@host:port)#name
+    if (!body.includes('@')) {
+      const decoded = b64decode(body);
+      normalized = 'ss://' + decoded + uri.slice('ss://'.length + body.length);
+    }
+    const a = parseAuthority(normalized);
+    if (!a) return { ok: false, error: 'err_parse' };
+    return finish(uri, protocol, a.host, toPort(a.port), a.fragment);
+  }
+
+  function parseStandard(uri, protocol) {
+    const a = parseAuthority(uri);
+    if (!a) return { ok: false, error: 'err_parse' };
+    return finish(uri, protocol, a.host, toPort(a.port), a.fragment);
+  }
+
+  function parseConfigUri(input) {
+    const uri = String(input || '').trim();
+    if (!uri) return { ok: false, error: 'uriRequired' };
+    if (uri.length > MAX_URI_LENGTH) return { ok: false, error: 'err_too_long' };
+    if (/\s/.test(uri)) return { ok: false, error: 'err_whitespace' };
+    const m = /^([a-z][a-z0-9+.-]*):\/\//i.exec(uri);
+    if (!m) return { ok: false, error: 'err_no_scheme' };
+    const scheme = m[1].toLowerCase();
+    const protocol = SCHEME_TO_PROTOCOL[scheme];
+    if (!protocol) return { ok: false, error: 'err_unsupported_scheme' };
+    try {
+      if (scheme === 'vmess') return parseVmess(uri, protocol);
+      if (scheme === 'ss') return parseShadowsocks(uri, protocol);
+      return parseStandard(uri, protocol);
+    } catch (_) {
+      return { ok: false, error: 'err_parse' };
+    }
+  }
+
+  function countryName(code) {
+    try {
+      return new Intl.DisplayNames([state.lang === 'en' ? 'en' : 'fa'], { type: 'region' }).of(code) || code;
+    } catch (_) {
+      return code;
+    }
+  }
+
+  function countryOf(c) {
+    if (c.country) return c.country;
+    return c.country_code ? countryName(c.country_code) : '';
+  }
+
+  function flagOf(code) {
+    if (!code || !/^[A-Z]{2}$/.test(code)) return '';
+    return String.fromCodePoint(...[...code].map((ch) => 127397 + ch.charCodeAt(0)));
+  }
+
+  function pingHtml(c) {
+    if (!c.last_checked_at) return `<span class="badge">${esc(t('pingUnknown'))}</span>`;
+    if (c.last_status === 'reachable') return `<span class="badge ping-ok">${esc(c.latency_ms)} ms</span>`;
+    if (c.last_status === 'blocked') return `<span class="badge ping-bad">${esc(t('pingBlocked'))}</span>`;
+    return `<span class="badge ping-bad">${esc(t('pingUnreachable'))}</span>`;
+  }
+
+  function clampPage(page, total, size) {
+    const pages = Math.max(1, Math.ceil(total / size));
+    return Math.min(Math.max(1, page), pages);
+  }
+
+  function pageSlice(rows, page, size) {
+    const p = clampPage(page, rows.length, size);
+    return rows.slice((p - 1) * size, p * size);
+  }
+
+  function pagerHtml(total, page, size) {
+    const pages = Math.max(1, Math.ceil(total / size));
+    if (pages <= 1) return '';
+    const p = clampPage(page, total, size);
+    return `<div class="pager">
+      <button class="btn small" type="button" data-go="${p - 1}" ${p <= 1 ? 'disabled' : ''}>${esc(t('prev'))}</button>
+      <span class="hint">${esc(t('pageInfo', { page: p, pages }))}</span>
+      <button class="btn small" type="button" data-go="${p + 1}" ${p >= pages ? 'disabled' : ''}>${esc(t('next'))}</button>
+    </div>`;
+  }
+
+  function hostPortText(p) {
+    if (!p || !p.ok) return '—';
+    return p.port ? `${p.host}:${p.port}` : p.host;
+  }
+
+  // ------------------------------------------------------------------
+  // UI helpers
+  // ------------------------------------------------------------------
+  function toast(message, kind) {
+    const el = document.createElement('div');
+    el.className = `toast ${kind || 'ok'}`;
+    el.textContent = message;
+    $('toasts').appendChild(el);
+    setTimeout(() => el.remove(), 3800);
+  }
+
+  function setStatus(id, message, kind) {
+    const el = $(id);
+    if (!message) {
+      el.className = 'status hidden';
+      el.textContent = '';
+      return;
+    }
+    el.className = `status ${kind || 'ok'}`;
+    el.textContent = message;
+  }
+
+  function setText(id, message) {
+    const el = $(id);
+    el.textContent = message || '';
+    el.classList.toggle('hidden', !message);
+  }
+
+  function showEmpty(el, title, text) {
+    el.classList.remove('hidden');
+    el.innerHTML = `<h3>${esc(title)}</h3>${text ? `<p>${esc(text)}</p>` : ''}`;
+  }
+
+  function hideEmpty(el) {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+  }
+
+  function setBusy(on, button, label) {
+    state.busy = on;
+    if (button) {
+      button.disabled = on;
+      button.textContent = label;
+    }
+  }
+
+  function openOverlay(id) {
+    const el = $(id);
+    el.classList.add('open');
+    el.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeOverlay(id) {
+    const el = $(id);
+    el.classList.remove('open');
+    el.setAttribute('aria-hidden', 'true');
+  }
+
+  function fillSelect(id, options) {
+    const el = $(id);
+    const current = el.value;
+    el.innerHTML = options.map(([v, label]) => `<option value="${esc(v)}">${esc(label)}</option>`).join('');
+    if (options.some(([v]) => v === current)) el.value = current;
+  }
+
+  function protocolPairs() {
+    return PROTOCOLS.map((p) => [p, PROTOCOL_LABEL[p]]);
+  }
+
+  function buildSelects() {
+    fillSelect('publicProtocol', [['all', t('allProtocols')], ...protocolPairs()]);
+    fillSelect('adminProtocolFilter', [['all', t('allProtocols')], ...protocolPairs()]);
+    fillSelect('cfgProtocol', [['auto', t('protocolAuto')], ...protocolPairs()]);
+    fillSelect('adminStatusFilter', [
+      ['all', t('statusAll')],
+      ['published', t('statusPublished')],
+      ['unpublished', t('statusUnpublished')],
+    ]);
+    const countries = [...new Set(state.publicConfigs.map((c) => countryOf(c)).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b));
+    fillSelect('publicCountry', [['all', t('allCountries')], ...countries.map((c) => [c, c])]);
+  }
+
+  function renderDetected(input, out) {
+    const raw = input.value;
+    if (!raw.trim()) {
+      out.textContent = '';
+      out.className = 'hint';
+      return;
+    }
+    const p = parseConfigUri(raw);
+    if (p.ok) {
+      out.textContent = t('detectedAs', { p: PROTOCOL_LABEL[p.protocol] });
+      out.className = 'ok-text';
+    } else {
+      out.textContent = t(p.error);
+      out.className = 'error-text';
+    }
+  }
+
+  function updateDetected() {
+    renderDetected($('cfgUri'), $('cfgDetected'));
+    renderDetected($('subUri'), $('subDetected'));
+  }
+
+  function applyI18n() {
+    const isEn = state.lang === 'en';
+    document.documentElement.lang = isEn ? 'en' : 'fa';
+    document.documentElement.dir = isEn ? 'ltr' : 'rtl';
+    document.title = t('appTitle');
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+    buildSelects();
+    renderPublicStats();
+    renderPublicList();
+    renderAdminStats();
+    renderAdminList();
+    renderSubmissions();
+    updateDetected();
+  }
+
+  // ------------------------------------------------------------------
+  // Errors and sessions
+  // ------------------------------------------------------------------
+  function isSessionExpired(error) {
+    if (!error) return false;
+    const text = `${error.message || ''} ${error.code || ''}`;
+    return error.status === 401 || /jwt|expired|PGRST301/i.test(text);
+  }
+
+  function isNetworkError(error) {
+    if (!navigator.onLine) return true;
+    return /fetch|network/i.test((error && error.message) || '');
+  }
+
+  function errorMessage(error) {
+    if (!error) return t('err_load');
+    if (error.notFound) return t('notFound');
+    if (isSessionExpired(error)) return t('sessionExpired');
+    if (isNetworkError(error)) return t('err_network');
+    const code = String(error.code || '');
+    if (code === 'P0002') return t('alreadyReviewed');
+    if (code === '53400') return t('submitLimit');
+    if (code === '42501' || error.status === 403) return t('permissionDenied');
+    if (code === '23505') return t('duplicate');
+    if (['23502', '23514', '22001', '22P02'].includes(code)) return t('invalidData');
+    return t('err_load');
+  }
+
+  // ------------------------------------------------------------------
+  // Clipboard
+  // ------------------------------------------------------------------
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (_) { /* fall through to legacy method */ }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch (_) {
+      return false;
+    }
+  }
+
+
+  // ------------------------------------------------------------------
+  // PUBLIC DIRECTORY
+  // ------------------------------------------------------------------
+  function renderPublicStats() {
+    const items = state.publicConfigs;
+    $('publicStatCount').textContent = String(items.length);
+    $('publicStatProtocols').textContent = String(new Set(items.map((c) => c.protocol)).size);
+    $('publicStatCountries').textContent = String(new Set(items.map((c) => countryOf(c)).filter(Boolean)).size);
+  }
+
+  function publicCardHtml(c, p) {
+    const expanded = state.expanded.has(c.id);
+    return `
+      <article class="cfg-card" data-id="${esc(c.id)}">
+        <div class="cfg-meta">
+          <span class="badge ${esc(c.protocol)}">${esc(PROTOCOL_LABEL[c.protocol] || c.protocol)}</span>
+          ${countryOf(c) ? `<span>${esc(flagOf(c.country_code) || '🌐')} ${esc(countryOf(c))}</span>` : ''}
+        </div>
+        <h3 class="cfg-name">${esc(c.name)}</h3>
+        <div class="host">${esc(t('host'))}: <code>${esc(hostPortText(p))}</code></div>
+        ${c.description ? `<p class="desc">${esc(c.description)}</p>` : ''}
+        <pre class="uri-box ${expanded ? '' : 'hidden'}" dir="ltr">${esc(c.config_uri)}</pre>
+        <div class="cfg-actions">
+          <button class="btn small" type="button" data-action="toggle" aria-expanded="${expanded}">${esc(t(expanded ? 'hide' : 'show'))}</button>
+          <button class="btn small primary" type="button" data-action="copy">${esc(t('copy'))}</button>
+          <button class="btn small" type="button" data-action="report">${esc(t('reportBtn'))}</button>
+        </div>
+      </article>`;
+  }
+
+  function renderPublicList() {
+    const list = $('publicList');
+    const empty = $('publicEmpty');
+    if (state.publicLoading) {
+      list.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+      hideEmpty(empty);
+      $('publicResultInfo').textContent = t('loading');
+      return;
+    }
+    const q = $('publicSearch').value.trim().toLowerCase();
+    const proto = $('publicProtocol').value;
+    const country = $('publicCountry').value;
+    const rows = state.publicConfigs
+      .map((c) => ({ c, p: parseConfigUri(c.config_uri) }))
+      .filter(({ c, p }) => {
+        if (proto !== 'all' && c.protocol !== proto) return false;
+        if (country !== 'all' && countryOf(c) !== country) return false;
+        if (!q) return true;
+        return [c.name, c.protocol, c.country, p.ok ? p.host : '']
+          .some((v) => String(v || '').toLowerCase().includes(q));
+      });
+
+    if (!state.publicConfigs.length) {
+      list.innerHTML = '';
+      showEmpty(empty, t('emptyTitle'), t('emptyText'));
+    } else if (!rows.length) {
+      list.innerHTML = '';
+      showEmpty(empty, t('noMatch'), '');
+    } else {
+      hideEmpty(empty);
+      list.innerHTML = pageSlice(rows, state.publicPage, PUBLIC_PAGE_SIZE).map(({ c, p }) => publicCardHtml(c, p)).join('');
+    }
+    $('publicResultInfo').textContent = t('showingCount', { count: rows.length });
+    $('publicPager').innerHTML = pagerHtml(rows.length, state.publicPage, PUBLIC_PAGE_SIZE);
+  }
+
+  async function loadPublic() {
+    state.publicLoading = true;
+    renderPublicList();
+    setStatus('publicStatus', '');
+    const { data, error } = await sb
+      .from(TABLE)
+      .select(PUBLIC_COLUMNS)
+      .eq('is_published', true)
+      .order('created_at', { ascending: false });
+    state.publicLoading = false;
+    if (error) {
+      state.publicConfigs = [];
+      setStatus('publicStatus', errorMessage(error), 'err');
+    } else {
+      state.publicConfigs = data || [];
+    }
+    renderPublicStats();
+    buildSelects();
+    renderPublicList();
+  }
+
+  // ------------------------------------------------------------------
+  // PUBLIC SUBMISSION
+  // ------------------------------------------------------------------
+  function readLastSubmit() {
+    try { return Number(localStorage.getItem(LAST_SUBMIT_KEY)) || 0; } catch (_) { return 0; }
+  }
+
+  function writeLastSubmit(value) {
+    try { localStorage.setItem(LAST_SUBMIT_KEY, String(value)); } catch (_) {}
+  }
+
+  function openSubmit() {
+    $('submitForm').reset();
+    ['errSubName', 'errSubUri', 'errSubCountry', 'errSubDesc', 'subError'].forEach((id) => setText(id, ''));
+    updateDetected();
+    openOverlay('submitOverlay');
+    $('subName').focus();
+  }
+
+  function buildSubmission() {
+    const errors = {};
+    const name = $('subName').value.trim();
+    const uri = $('subUri').value.trim();
+    const country = $('subCountry').value.trim();
+    const description = $('subDesc').value.trim();
+    const parsed = parseConfigUri(uri);
+
+    if (!name) errors.name = t('nameRequired');
+    else if (name.length > 200) errors.name = t('nameTooLong');
+
+    if (!uri) errors.uri = t('uriRequired');
+    else if (!parsed.ok) errors.uri = t(parsed.error);
+    else {
+      const dup = state.publicConfigs.find((c) => c.config_uri.trim() === uri);
+      if (dup) errors.uri = t('duplicateNamed', { name: dup.name });
+    }
+
+    if (country.length > 100) errors.country = t('countryTooLong');
+    if (description.length > 1000) errors.description = t('descTooLong');
+
+    return {
+      errors,
+      record: {
+        name,
+        config_uri: uri,
+        protocol: parsed.ok ? parsed.protocol : '',
+        country: country || null,
+        description: description || null,
+      },
+    };
+  }
+
+  async function submitConfig(event) {
+    event.preventDefault();
+    if (state.busy) return;
+    const { errors, record } = buildSubmission();
+    setText('errSubName', errors.name);
+    setText('errSubUri', errors.uri);
+    setText('errSubCountry', errors.country);
+    setText('errSubDesc', errors.description);
+    setText('subError', '');
+    if (Object.keys(errors).length) return;
+
+    if (Date.now() - readLastSubmit() < SUBMIT_COOLDOWN_MS) {
+      setText('subError', t('submitWait'));
+      return;
+    }
+
+    setBusy(true, $('subSave'), t('saving'));
+    try {
+      const { error } = await sb.from(SUBS_TABLE).insert(record);
+      if (error) throw error;
+      writeLastSubmit(Date.now());
+      closeOverlay('submitOverlay');
+      toast(t('submitted'), 'ok');
+    } catch (err) {
+      setText('subError', errorMessage(err));
+    } finally {
+      setBusy(false, $('subSave'), t('submitBtn'));
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // ADMIN: session and authorization
+  // ------------------------------------------------------------------
+  function showGate(which) {
+    $('loginCard').classList.toggle('hidden', which !== 'login');
+    $('deniedCard').classList.toggle('hidden', which !== 'denied');
+    $('adminPanel').classList.toggle('hidden', which !== 'panel');
+    if (which === 'login') {
+      const notice = state.gateNoticeKey ? t(state.gateNoticeKey) : '';
+      $('loginNotice').textContent = notice;
+      $('loginNotice').classList.toggle('hidden', !notice);
+      $('loginError').classList.add('hidden');
+    }
+  }
+
+  async function renderAdmin() {
+    if (state.view !== 'admin') return;
+    const { data: sessionData } = await sb.auth.getSession();
+    const session = sessionData && sessionData.session;
+    if (!session) {
+      state.isAdmin = false;
+      state.userId = null;
+      showGate('login');
+      return;
+    }
+    // Authorization is checked on the server (SECURITY DEFINER function reading
+    // v2rayhub_admins). RLS enforces the same rule for every table operation.
+    // Returns the caller's role and permissions, or null when not an administrator.
+    const { data: perms, error } = await sb.rpc(MY_PERMS_RPC);
+    if (error) {
+      if (isSessionExpired(error)) return expireSession();
+      state.isAdmin = false;
+      $('deniedDetail').textContent = errorMessage(error);
+      $('deniedDetail').classList.remove('hidden');
+      showGate('denied');
+      return;
+    }
+    if (!perms || typeof perms !== 'object') {
+      state.isAdmin = false;
+      $('deniedDetail').classList.add('hidden');
+      showGate('denied');
+      return;
+    }
+    state.isAdmin = true;
+    applyPermissions(perms);
+    state.userId = session.user.id;
+    state.gateNoticeKey = '';
+    showGate('panel');
+    setAdminTab(state.adminTab);
+    await Promise.all([loadAdminConfigs(), loadSubmissions()]);
+  }
+
+  async function expireSession() {
+    state.gateNoticeKey = 'sessionExpired';
+    state.adminConfigs = [];
+    state.submissions = [];
+    state.isAdmin = false;
+    state.userId = null;
+    await sb.auth.signOut({ scope: 'local' }).catch(() => {});
+    await renderAdmin();
+  }
+
+  function reportAdminError(err) {
+    if (isSessionExpired(err)) {
+      expireSession();
+      return;
+    }
+    setStatus('adminStatus', errorMessage(err), 'err');
+  }
+
+  async function logout() {
+    state.userLoggingOut = true;
+    state.gateNoticeKey = '';
+    state.adminConfigs = [];
+    state.submissions = [];
+    state.isAdmin = false;
+    state.userId = null;
+    await sb.auth.signOut();
+    await renderAdmin();
+  }
+
+  function setAdminTab(tab) {
+    if (tab === 'admins' && !state.isOwner) tab = 'configs';
+    if (tab === 'reports' && !(state.isOwner || (state.perms && state.perms.can_review))) tab = 'configs';
+    state.adminTab = tab;
+    $('configsSection').classList.toggle('hidden', tab !== 'configs');
+    $('submissionsSection').classList.toggle('hidden', tab !== 'subs');
+    $('adminsSection').classList.toggle('hidden', tab !== 'admins');
+    $('reportsSection').classList.toggle('hidden', tab !== 'reports');
+    $('tabConfigs').classList.toggle('active', tab === 'configs');
+    $('tabSubs').classList.toggle('active', tab === 'subs');
+    $('tabAdmins').classList.toggle('active', tab === 'admins');
+    $('tabReports').classList.toggle('active', tab === 'reports');
+    if (tab === 'admins') loadAdmins();
+    if (tab === 'reports') loadReports();
+  }
+
+  // Hides buttons the caller may not use. The database enforces the same rules.
+  function applyPermissions(perms) {
+    state.perms = perms;
+    state.isOwner = perms.role === 'owner';
+    const can = (key) => state.isOwner || perms[key] === true;
+    const panel = $('adminPanel');
+    panel.classList.toggle('perm-no-add', !can('can_add'));
+    panel.classList.toggle('perm-no-edit', !can('can_edit'));
+    panel.classList.toggle('perm-no-delete', !can('can_delete'));
+    panel.classList.toggle('perm-no-review', !can('can_review'));
+    $('tabAdmins').classList.toggle('hidden', !state.isOwner);
+    $('tabReports').classList.toggle('hidden', !can('can_review'));
+    if (!can('can_review') && state.adminTab === 'reports') state.adminTab = 'configs';
+    if (!state.isOwner && state.adminTab === 'admins') state.adminTab = 'configs';
+  }
+
+  // ------------------------------------------------------------------
+  // REPORTS: visitors report broken configurations; reviewers read and clear them
+  // ------------------------------------------------------------------
+  const REPORT_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+  // The browser remembers the last report per configuration (once per day).
+  // The database also limits how many reports can be stored.
+  async function reportConfig(config, button) {
+    const key = 'v2rayhub_reported';
+    let seen = {};
+    try {
+      seen = JSON.parse(localStorage.getItem(key) || '{}') || {};
+    } catch (_) {
+      seen = {};
+    }
+    if (Date.now() - (seen[config.id] || 0) < REPORT_COOLDOWN_MS) {
+      toast(t('reportedAlready'), 'ok');
+      return;
+    }
+    button.disabled = true;
+    const { error } = await sb.from(REPORTS_TABLE).insert({ config_id: config.id });
+    button.disabled = false;
+    if (error) {
+      toast(t('reportFailed'), 'err');
+      return;
+    }
+    seen[config.id] = Date.now();
+    try {
+      localStorage.setItem(key, JSON.stringify(seen));
+    } catch (_) {
+      // storage unavailable (private mode): the report was still recorded
+    }
+    button.textContent = t('reported');
+    toast(t('reportThanks'), 'ok');
+  }
+
+  async function loadReports() {
+    if (!state.isAdmin) return;
+    if (!state.adminConfigs.length) await loadAdminConfigs();
+    const { data, error } = await sb
+      .from(REPORTS_TABLE)
+      .select('config_id, created_at')
+      .order('created_at', { ascending: false })
+      .limit(5000);
+    if (error) {
+      reportAdminError(error);
+      return;
+    }
+    const groups = new Map();
+    (data || []).forEach((row) => {
+      const g = groups.get(row.config_id) || { count: 0, last: row.created_at };
+      g.count += 1;
+      groups.set(row.config_id, g);
+    });
+    state.reportGroups = [...groups.entries()]
+      .map(([id, g]) => ({
+        id,
+        count: g.count,
+        last: g.last,
+        config: state.adminConfigs.find((c) => c.id === id) || null,
+      }))
+      .filter((g) => g.config)
+      .sort((a, b) => b.count - a.count);
+    renderReports();
+  }
+
+  function renderReports() {
+    const list = $('reportsList');
+    if (!state.reportGroups.length) {
+      list.innerHTML = `<p class="hint">${esc(t('reportsNone'))}</p>`;
+      return;
+    }
+    list.innerHTML = state.reportGroups.map((g) => {
+      const c = g.config;
+      return `
+        <div class="card" data-id="${esc(c.id)}">
+          <div class="admin-card-head">
+            <strong>${esc(c.name)}</strong>
+            <span class="badge ping-bad">${esc(t('reportCount', { n: g.count }))}</span>
+          </div>
+          <div class="host">${esc(t('host'))}: <code dir="ltr">${esc(hostPortText(parseConfigUri(c.config_uri)))}</code></div>
+          <div class="host">${esc(t('lastReport'))}: ${esc(fmtDate(g.last))}</div>
+          <div class="cfg-actions">
+            <button class="btn small" type="button" data-action="copy-report">${esc(t('copy'))}</button>
+            <button class="btn small danger" type="button" data-action="clear-reports">${esc(t('clearReports'))}</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function clearReports(group) {
+    const confirmed = await confirmDialog({
+      title: t('clearReports'),
+      text: t('clearReportsText', { name: group.config.name }),
+      yes: t('deleteYes'),
+    });
+    if (!confirmed) return;
+    try {
+      const { error } = await sb.from(REPORTS_TABLE).delete().eq('config_id', group.id);
+      if (error) throw error;
+      toast(t('reportsClearedOk'), 'ok');
+      await loadReports();
+    } catch (err) {
+      reportAdminError(err);
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // ADMIN: administrators (owner only; writes go through the v2rayhub-admins function)
+  // ------------------------------------------------------------------
+  async function callAdminsFunction(body) {
+    const { data, error } = await sb.functions.invoke(ADMINS_FUNCTION, { body });
+    if (error) {
+      let message = errorMessage(error);
+      try {
+        const res = error.context;
+        if (res && typeof res.json === 'function') {
+          const payload = await res.json();
+          if (payload && payload.error) message = payload.error;
+        }
+      } catch (_) {
+        // keep the generic message
+      }
+      throw new Error(message);
+    }
+    if (data && data.error) throw new Error(data.error);
+    return data || {};
+  }
+
+  async function loadAdmins() {
+    if (!state.isOwner) return;
+    try {
+      const data = await callAdminsFunction({ action: 'list' });
+      state.admins = data.admins || [];
+      renderAdmins();
+    } catch (err) {
+      setStatus('adminStatus', err.message, 'err');
+    }
+  }
+
+  function renderAdmins() {
+    const list = $('adminsList');
+    if (!state.admins.length) {
+      list.innerHTML = `<p class="hint">${esc(t('adminNone'))}</p>`;
+      return;
+    }
+    list.innerHTML = state.admins.map((a) => {
+      const isOwner = a.role === 'owner';
+      const boxes = PERM_KEYS.map((key) => `
+        <label><input type="checkbox" data-perm="${key}" ${a[key] ? 'checked' : ''} ${isOwner ? 'disabled' : ''} /> ${esc(t(PERM_LABEL_KEYS[key]))}</label>`).join('');
+      return `
+        <div class="card" data-uid="${esc(a.user_id)}">
+          <div class="admin-card-head">
+            <strong dir="ltr">${esc(a.email || a.user_id)}</strong>
+            <span class="badge ${isOwner ? 'published' : 'draft'}">${esc(isOwner ? t('owner') : 'Admin')}</span>
+          </div>
+          <div class="perm-grid">${boxes}</div>
+          ${isOwner ? '' : `<button class="btn small danger" type="button" data-action="remove-admin">${esc(t('adminRemove'))}</button>`}
+        </div>`;
+    }).join('');
+  }
+
+  async function createAdmin(event) {
+    event.preventDefault();
+    const email = $('newAdminEmail').value.trim();
+    const password = $('newAdminPassword').value;
+    setText('adminCreateError', '');
+    if (!email || !password) {
+      setText('adminCreateError', t('loginRequired'));
+      return;
+    }
+    if (password.length < 8) {
+      setText('adminCreateError', t('passwordShort'));
+      return;
+    }
+    const button = $('adminCreateBtn');
+    button.disabled = true;
+    try {
+      const permissions = {};
+      PERM_KEYS.forEach((key) => { permissions[key] = $(NEW_PERM_IDS[key]).checked; });
+      await callAdminsFunction({ action: 'create', email, password, permissions });
+      $('newAdminEmail').value = '';
+      $('newAdminPassword').value = '';
+      toast(t('adminSaved'), 'ok');
+      await loadAdmins();
+    } catch (err) {
+      setText('adminCreateError', err.message);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function saveAdminPerms(card) {
+    const permissions = {};
+    PERM_KEYS.forEach((key) => {
+      permissions[key] = card.querySelector(`[data-perm="${key}"]`).checked;
+    });
+    try {
+      await callAdminsFunction({ action: 'update', user_id: card.dataset.uid, permissions });
+      toast(t('adminSaved'), 'ok');
+    } catch (err) {
+      setStatus('adminStatus', err.message, 'err');
+      await loadAdmins();
+    }
+  }
+
+  async function removeAdmin(admin) {
+    const confirmed = await confirmDialog({
+      title: t('adminRemove'),
+      text: t('adminRemoveText', { email: admin.email || admin.user_id }),
+      yes: t('deleteYes'),
+    });
+    if (!confirmed) return;
+    try {
+      await callAdminsFunction({ action: 'remove', user_id: admin.user_id });
+      toast(t('deleted'), 'ok');
+      await loadAdmins();
+    } catch (err) {
+      setStatus('adminStatus', err.message, 'err');
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // ADMIN: published configurations
+  // ------------------------------------------------------------------
+  async function loadAdminConfigs() {
+    if (!state.isAdmin) return;
+    const { data, error } = await sb
+      .from(TABLE)
+      .select(ADMIN_COLUMNS)
+      .order('created_at', { ascending: false });
+    if (error) {
+      reportAdminError(error);
+      return;
+    }
+    state.adminConfigs = data || [];
+    renderAdminStats();
+    renderAdminList();
+  }
+
+  async function updateRecord(id, patch) {
+    const { data, error } = await sb.from(TABLE).update(patch).eq('id', id).select('id');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      const err = new Error('no rows affected');
+      err.notFound = true;
+      throw err;
+    }
+    return data;
+  }
+
+  async function togglePublish(config) {
+    try {
+      await updateRecord(config.id, { is_published: !config.is_published });
+      toast(t(config.is_published ? 'unpublishedOk' : 'publishedOk'), 'ok');
+      await loadAdminConfigs();
+    } catch (err) {
+      reportAdminError(err);
+    }
+  }
+
+  async function deleteConfig(config) {
+    const confirmed = await confirmDialog({
+      title: t('deleteTitle'),
+      text: t('deleteText', { name: config.name }),
+      yes: t('deleteYes'),
+    });
+    if (!confirmed) return;
+    try {
+      const { data, error } = await sb.from(TABLE).delete().eq('id', config.id).select('id');
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        const err = new Error('no rows affected');
+        err.notFound = true;
+        throw err;
+      }
+      toast(t('deleted'), 'ok');
+      await loadAdminConfigs();
+    } catch (err) {
+      reportAdminError(err);
+    }
+  }
+
+  function filteredAdminConfigs() {
+    const q = $('adminSearch').value.trim().toLowerCase();
+    const status = $('adminStatusFilter').value;
+    const proto = $('adminProtocolFilter').value;
+    return state.adminConfigs.filter((c) => {
+      if (status === 'published' && !c.is_published) return false;
+      if (status === 'unpublished' && c.is_published) return false;
+      if (proto !== 'all' && c.protocol !== proto) return false;
+      if (!q) return true;
+      const p = parseConfigUri(c.config_uri);
+      return [c.name, c.country, c.protocol, p.ok ? p.host : '']
+        .some((v) => String(v || '').toLowerCase().includes(q));
+    });
+  }
+
+  function renderAdminStats() {
+    const all = state.adminConfigs;
+    const published = all.filter((c) => c.is_published).length;
+    $('adminStatTotal').textContent = String(all.length);
+    $('adminStatPublished').textContent = String(published);
+    $('adminStatUnpublished').textContent = String(all.length - published);
+  }
+
+  function adminRowHtml(c) {
+    const p = parseConfigUri(c.config_uri);
+    return `
+      <article class="admin-row" data-id="${esc(c.id)}">
+        <div>
+          <div class="cell-title">${esc(c.name)}</div>
+          ${c.description ? `<div class="cell-sub">${esc(c.description)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge ${esc(c.protocol)}">${esc(PROTOCOL_LABEL[c.protocol] || c.protocol)}</span>
+          <span class="badge ${c.is_published ? 'published' : 'draft'}">${esc(t(c.is_published ? 'badgePublished' : 'badgeDraft'))}</span>
+        </div>
+        <div class="cell-sub">
+          <div class="mono">${esc(hostPortText(p))}</div>
+          <div>${esc(countryOf(c) || '—')} ${pingHtml(c)}</div>
+        </div>
+        <div class="cell-sub">
+          <div>${esc(t('created'))}: ${esc(fmtDate(c.created_at))}</div>
+          <div>${esc(t('updated'))}: ${esc(fmtDate(c.updated_at))}</div>
+        </div>
+        <div class="row-actions">
+          <button class="btn small" type="button" data-action="toggle">${esc(t(c.is_published ? 'actionUnpublish' : 'actionPublish'))}</button>
+          <button class="btn small" type="button" data-action="edit">${esc(t('actionEdit'))}</button>
+          <button class="btn small danger" type="button" data-action="delete">${esc(t('actionDelete'))}</button>
+        </div>
+      </article>`;
+  }
+
+  function renderAdminList() {
+    const list = $('adminList');
+    const empty = $('adminEmpty');
+    if (!state.isAdmin) {
+      list.innerHTML = '';
+      hideEmpty(empty);
+      return;
+    }
+    const rows = filteredAdminConfigs();
+    if (!state.adminConfigs.length) {
+      list.innerHTML = '';
+      showEmpty(empty, t('adminEmptyTitle'), t('adminEmptyText'));
+    } else if (!rows.length) {
+      list.innerHTML = '';
+      showEmpty(empty, t('noMatch'), '');
+    } else {
+      hideEmpty(empty);
+      list.innerHTML = pageSlice(rows, state.adminPage, ADMIN_PAGE_SIZE).map(adminRowHtml).join('');
+    }
+    $('adminResultInfo').textContent = t('showingCount', { count: rows.length });
+    $('adminPager').innerHTML = pagerHtml(rows.length, state.adminPage, ADMIN_PAGE_SIZE);
+  }
+
+  // ------------------------------------------------------------------
+  // ADMIN: submissions queue
+  // ------------------------------------------------------------------
+  async function loadSubmissions() {
+    if (!state.isAdmin) return;
+    const { data, error } = await sb
+      .from(SUBS_TABLE)
+      .select(SUB_COLUMNS)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true });
+    if (error) {
+      reportAdminError(error);
+      return;
+    }
+    state.submissions = data || [];
+    $('pendingBadge').textContent = String(state.submissions.length);
+    renderSubmissions();
+  }
+
+  function subRowHtml(s) {
+    const p = parseConfigUri(s.config_uri);
+    return `
+      <article class="admin-row" data-id="${esc(s.id)}">
+        <div>
+          <div class="cell-title">${esc(s.name)}</div>
+          ${s.description ? `<div class="cell-sub">${esc(s.description)}</div>` : ''}
+        </div>
+        <div><span class="badge ${esc(s.protocol)}">${esc(PROTOCOL_LABEL[s.protocol] || s.protocol)}</span></div>
+        <div class="cell-sub">
+          <div class="mono">${esc(hostPortText(p))}</div>
+          <div>${esc(s.country || '—')}</div>
+        </div>
+        <div class="cell-sub">
+          <div>${esc(t('created'))}: ${esc(fmtDate(s.created_at))}</div>
+        </div>
+        <div class="row-actions">
+          <button class="btn small" type="button" data-action="copy">${esc(t('copy'))}</button>
+          <button class="btn small" type="button" data-action="test">${esc(t('test'))}</button>
+          <button class="btn small primary" type="button" data-action="approve">${esc(t('actionApprove'))}</button>
+          <button class="btn small danger" type="button" data-action="reject">${esc(t('actionReject'))}</button>
+        </div>
+        <div class="test-result wide hidden"></div>
+      </article>`;
+  }
+
+  function renderSubmissions() {
+    const list = $('subsList');
+    const empty = $('subsEmpty');
+    if (!state.isAdmin) {
+      list.innerHTML = '';
+      hideEmpty(empty);
+      return;
+    }
+    if (!state.submissions.length) {
+      list.innerHTML = '';
+      showEmpty(empty, t('subsEmptyTitle'), t('subsEmptyText'));
+    } else {
+      hideEmpty(empty);
+      list.innerHTML = state.submissions.map(subRowHtml).join('');
+    }
+  }
+
+  function setTestResult(card, kind, message) {
+    const el = card.querySelector('.test-result');
+    el.className = `test-result wide ${kind}`;
+    el.textContent = message;
+  }
+
+  async function testSubmission(sub, card) {
+    const p = parseConfigUri(sub.config_uri);
+    if (!p.ok || !p.port) {
+      setTestResult(card, 'err', t('testNoPort'));
+      return;
+    }
+    setTestResult(card, 'info', t('testRunning'));
+    try {
+      const { data, error } = await sb.functions.invoke(TEST_FUNCTION, {
+        body: { host: p.host, port: p.port },
+      });
+      if (error) {
+        if (isSessionExpired(error)) { expireSession(); return; }
+        setTestResult(card, 'err', t('testFailed'));
+        return;
+      }
+      if (data && data.reachable) {
+        setTestResult(card, 'ok', `${t('testReachable', { ms: data.ms })} ${t('testDisclaimer')}`);
+      } else {
+        setTestResult(card, 'err', `${t('testUnreachable')} ${t('testDisclaimer')}`);
+      }
+    } catch (_) {
+      setTestResult(card, 'err', t('testFailed'));
+    }
+  }
+
+  async function approveSubmission(sub) {
+    try {
+      const { error } = await sb.rpc(APPROVE_RPC, { p_submission_id: sub.id, p_publish: true });
+      if (error) throw error;
+      toast(t('approvedOk'), 'ok');
+      await Promise.all([loadSubmissions(), loadAdminConfigs()]);
+    } catch (err) {
+      reportAdminError(err);
+    }
+  }
+
+  async function rejectSubmission(sub) {
+    const confirmed = await confirmDialog({
+      title: t('rejectTitle'),
+      text: t('rejectText', { name: sub.name }),
+      yes: t('rejectYes'),
+    });
+    if (!confirmed) return;
+    try {
+      const { data, error } = await sb
+        .from(SUBS_TABLE)
+        .update({
+          status: 'rejected',
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: state.userId,
+        })
+        .eq('id', sub.id)
+        .eq('status', 'pending')
+        .select('id');
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        const err = new Error('no rows affected');
+        err.notFound = true;
+        throw err;
+      }
+      toast(t('rejectedOk'), 'ok');
+      await loadSubmissions();
+    } catch (err) {
+      reportAdminError(err);
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // ADMIN: add / edit form
+  // ------------------------------------------------------------------
+  function findDuplicate(uri, excludeId) {
+    const normalized = uri.trim();
+    return state.adminConfigs.find((c) => c.id !== excludeId && c.config_uri.trim() === normalized) || null;
+  }
+
+  function openConfigModal(config) {
+    state.editingId = config ? config.id : null;
+    $('configTitle').textContent = t(config ? 'formEditTitle' : 'formAddTitle');
+    $('cfgName').value = config ? config.name : '';
+    $('cfgUri').value = config ? config.config_uri : '';
+    $('cfgCountry').value = config && config.country ? config.country : '';
+    $('cfgDesc').value = config && config.description ? config.description : '';
+    $('cfgPublished').checked = config ? !!config.is_published : false;
+    if (config) {
+      const p = parseConfigUri(config.config_uri);
+      const matchesScheme = p.ok && p.protocol === config.protocol;
+      $('cfgProtocol').value = matchesScheme ? 'auto' : config.protocol;
+    } else {
+      $('cfgProtocol').value = 'auto';
+    }
+    setText('errName', '');
+    setText('errUri', '');
+    setText('errCountry', '');
+    setText('errDesc', '');
+    setText('cfgError', '');
+    updateDetected();
+    openOverlay('configOverlay');
+    $('cfgName').focus();
+  }
+
+  function buildRecord() {
+    const errors = {};
+    const name = $('cfgName').value.trim();
+    const uri = $('cfgUri').value.trim();
+    const country = $('cfgCountry').value.trim();
+    const description = $('cfgDesc').value.trim();
+    const parsed = parseConfigUri(uri);
+    const selected = $('cfgProtocol').value;
+
+    if (!name) errors.name = t('nameRequired');
+    else if (name.length > 200) errors.name = t('nameTooLong');
+
+    if (!uri) errors.uri = t('uriRequired');
+    else if (!parsed.ok) errors.uri = t(parsed.error);
+    else {
+      const dup = findDuplicate(uri, state.editingId);
+      if (dup) errors.uri = t('duplicateNamed', { name: dup.name });
+    }
+
+    if (country.length > 100) errors.country = t('countryTooLong');
+    if (description.length > 1000) errors.description = t('descTooLong');
+
+    const protocol = selected === 'auto' ? (parsed.ok ? parsed.protocol : '') : selected;
+
+    return {
+      errors,
+      record: {
+        name,
+        config_uri: uri,
+        protocol,
+        country: country || null,
+        description: description || null,
+        is_published: $('cfgPublished').checked,
+      },
+    };
+  }
+
+  async function saveConfigForm(event) {
+    event.preventDefault();
+    if (state.busy) return;
+    const { errors, record } = buildRecord();
+    setText('errName', errors.name);
+    setText('errUri', errors.uri);
+    setText('errCountry', errors.country);
+    setText('errDesc', errors.description);
+    setText('cfgError', '');
+    if (Object.keys(errors).length) return;
+
+    setBusy(true, $('cfgSave'), t('saving'));
+    try {
+      if (state.editingId) {
+        await updateRecord(state.editingId, record);
+      } else {
+        // created_by is filled by the database default (auth.uid()) and checked by RLS.
+        const { error } = await sb.from(TABLE).insert(record);
+        if (error) throw error;
+      }
+      toast(t('saved'), 'ok');
+      closeOverlay('configOverlay');
+      await loadAdminConfigs();
+    } catch (err) {
+      if (isSessionExpired(err)) {
+        closeOverlay('configOverlay');
+        expireSession();
+      } else {
+        setText('cfgError', errorMessage(err));
+      }
+    } finally {
+      setBusy(false, $('cfgSave'), t('save'));
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // ADMIN: bulk import
+  // ------------------------------------------------------------------
+  function openImport() {
+    $('importText').value = '';
+    $('importPublish').checked = false;
+    state.importRows = [];
+    $('importPreview').innerHTML = '';
+    $('importRun').disabled = true;
+    openOverlay('importOverlay');
+    $('importText').focus();
+  }
+
+  function previewImport() {
+    const lines = $('importText').value
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'));
+
+    if (!lines.length) {
+      state.importRows = [];
+      $('importPreview').innerHTML = `<p class="hint">${esc(t('importNone'))}</p>`;
+      $('importRun').disabled = true;
+      return;
+    }
+    if (lines.length > MAX_IMPORT_LINES) {
+      state.importRows = [];
+      $('importPreview').innerHTML = `<p class="error-text">${esc(t('importTooMany'))}</p>`;
+      $('importRun').disabled = true;
+      return;
+    }
+
+    const existing = new Set(state.adminConfigs.map((c) => c.config_uri.trim()));
+    const seen = new Set();
+    state.importRows = lines.map((line, index) => {
+      const row = { line, index: index + 1, status: 'valid', message: '', parsed: null, name: '' };
+      const parsed = parseConfigUri(line);
+      if (!parsed.ok) {
+        row.status = 'invalid';
+        row.message = t(parsed.error);
+        return row;
+      }
+      row.parsed = parsed;
+      row.name = (parsed.name || `${PROTOCOL_LABEL[parsed.protocol]} ${hostPortText(parsed)}`).slice(0, 200);
+      if (seen.has(line)) {
+        row.status = 'duplicate';
+        row.message = t('importDupInPaste');
+      } else if (existing.has(line)) {
+        row.status = 'duplicate';
+        row.message = t('importDuplicate');
+      }
+      seen.add(line);
+      return row;
+    });
+    renderImportPreview();
+  }
+
+  function renderImportPreview() {
+    const rows = state.importRows;
+    const ready = rows.filter((r) => r.status === 'valid').length;
+    $('importRun').disabled = ready === 0;
+    const summary = `<p class="hint">${esc(t('importSummary', { valid: ready, total: rows.length }))}</p>`;
+    const items = rows.map((r) => {
+      const icon = r.status === 'valid' ? '✓' : r.status === 'duplicate' ? '⚠' : '✕';
+      const label = r.status === 'valid' ? r.name : r.message;
+      return `<div class="preview-row ${r.status}"><span class="mono">${icon} ${r.index}</span><span>${esc(label)}</span></div>`;
+    }).join('');
+    $('importPreview').innerHTML = summary + items;
+  }
+
+  async function runImport() {
+    const rows = state.importRows.filter((r) => r.status === 'valid');
+    if (!rows.length || state.busy) return;
+    const publish = $('importPublish').checked;
+    let saved = 0;
+    let failed = 0;
+    let expired = false;
+
+    setBusy(true, $('importRun'), t('importRunning'));
+    try {
+      for (let i = 0; i < rows.length; i += IMPORT_CHUNK) {
+        const chunk = rows.slice(i, i + IMPORT_CHUNK).map((r) => ({
+          name: r.name,
+          config_uri: r.line,
+          protocol: r.parsed.protocol,
+          is_published: publish,
+        }));
+        const { error } = await sb.from(TABLE).insert(chunk);
+        if (error) {
+          if (isSessionExpired(error)) { expired = true; break; }
+          failed += chunk.length;
+        } else {
+          saved += chunk.length;
+        }
+      }
+    } finally {
+      setBusy(false, $('importRun'), t('importRun'));
+    }
+
+    closeOverlay('importOverlay');
+    if (expired) {
+      expireSession();
+      return;
+    }
+    toast(t('importDone', { ok: saved, fail: failed }), failed ? 'err' : 'ok');
+    await loadAdminConfigs();
+  }
+
+  // ------------------------------------------------------------------
+  // Confirm dialog (returns a Promise<boolean>)
+  // ------------------------------------------------------------------
+  function confirmDialog({ title, text, yes }) {
+    return new Promise((resolve) => {
+      $('confirmTitle').textContent = title;
+      $('confirmText').textContent = text;
+      $('confirmYes').textContent = yes;
+      $('confirmNo').textContent = t('cancel');
+      state.confirmResolve = resolve;
+      openOverlay('confirmOverlay');
+    });
+  }
+
+  function settleConfirm(result) {
+    closeOverlay('confirmOverlay');
+    const resolve = state.confirmResolve;
+    state.confirmResolve = null;
+    if (resolve) resolve(result);
+  }
+
+  // ------------------------------------------------------------------
+  // Routing
+  // ------------------------------------------------------------------
+  function route() {
+    const admin = location.hash === '#admin';
+    state.view = admin ? 'admin' : 'public';
+    $('publicView').classList.toggle('hidden', admin);
+    $('adminView').classList.toggle('hidden', !admin);
+    $('navPublic').classList.toggle('active', !admin);
+    $('navAdmin').classList.toggle('active', admin);
+    if (admin) {
+      renderAdmin();
+    } else {
+      loadPublic();
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // Events
+  // ------------------------------------------------------------------
+  function bindEvents() {
+    // Language
+    $('langToggle').addEventListener('click', () => {
+      state.lang = state.lang === 'fa' ? 'en' : 'fa';
+      try { localStorage.setItem('v2rayhub.lang', state.lang); } catch (_) {}
+      applyI18n();
+    });
+
+    // Public filters and actions
+    const resetPublic = () => { state.publicPage = 1; renderPublicList(); };
+    $('publicSearch').addEventListener('input', resetPublic);
+    $('publicProtocol').addEventListener('change', resetPublic);
+    $('publicCountry').addEventListener('change', resetPublic);
+    $('publicPager').addEventListener('click', (event) => {
+      const b = event.target.closest('button[data-go]');
+      if (!b || b.disabled) return;
+      state.publicPage = Number(b.dataset.go);
+      renderPublicList();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    $('refreshPublic').addEventListener('click', loadPublic);
+    $('copySubLink').addEventListener('click', async () => {
+      // Copies the subscription URL. A selected protocol filter is included.
+      const protocol = $('publicProtocol').value;
+      const base = `${SUPABASE_URL}/functions/v1/${SUB_FUNCTION}`;
+      const url = protocol && protocol !== 'all' ? `${base}?protocol=${encodeURIComponent(protocol)}` : base;
+      const ok = await copyText(url);
+      toast(t(ok ? 'copied' : 'copyFailed'), ok ? 'ok' : 'err');
+    });
+    $('openSubmit').addEventListener('click', openSubmit);
+
+    // Public list: show/hide and copy (event delegation)
+    $('publicList').addEventListener('click', async (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const card = button.closest('[data-id]');
+      const config = state.publicConfigs.find((c) => c.id === card.dataset.id);
+      if (!config) return;
+      const uriBox = card.querySelector('.uri-box');
+
+      if (button.dataset.action === 'toggle') {
+        const open = !state.expanded.has(config.id);
+        if (open) state.expanded.add(config.id);
+        else state.expanded.delete(config.id);
+        uriBox.classList.toggle('hidden', !open);
+        button.textContent = t(open ? 'hide' : 'show');
+        button.setAttribute('aria-expanded', String(open));
+        return;
+      }
+
+      if (button.dataset.action === 'report') {
+        reportConfig(config, button);
+        return;
+      }
+
+      if (button.dataset.action === 'copy') {
+        const ok = await copyText(config.config_uri);
+        if (ok) {
+          toast(t('copied'), 'ok');
+        } else {
+          state.expanded.add(config.id);
+          uriBox.classList.remove('hidden');
+          toast(t('copyFailed'), 'err');
+        }
+        return;
+      }
+    });
+
+    // Submit form
+    $('submitForm').addEventListener('submit', submitConfig);
+    $('subUri').addEventListener('input', updateDetected);
+
+    // Login
+    $('loginForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const email = $('loginEmail').value.trim();
+      const password = $('loginPassword').value;
+      if (!email || !password) {
+        setText('loginError', t('loginRequired'));
+        return;
+      }
+      setText('loginError', '');
+      const button = $('loginBtn');
+      button.disabled = true;
+      button.textContent = t('signingIn');
+      state.userLoggingOut = false;
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      button.disabled = false;
+      button.textContent = t('signIn');
+      $('loginPassword').value = '';
+      if (error) {
+        setText('loginError', isNetworkError(error) ? t('err_network') : t('loginFailed'));
+        return;
+      }
+      state.gateNoticeKey = '';
+      await renderAdmin();
+    });
+
+    // Logout buttons
+    $('adminLogout').addEventListener('click', logout);
+    $('deniedLogout').addEventListener('click', logout);
+
+    // Admin tabs and toolbar
+    $('tabConfigs').addEventListener('click', () => setAdminTab('configs'));
+    $('tabSubs').addEventListener('click', () => setAdminTab('subs'));
+
+    // Administrators tab (owner only)
+    $('tabAdmins').addEventListener('click', () => setAdminTab('admins'));
+    $('tabReports').addEventListener('click', () => setAdminTab('reports'));
+    $('reportsList').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const id = button.closest('[data-id]').dataset.id;
+      const group = state.reportGroups.find((g) => g.id === id);
+      if (!group) return;
+      if (button.dataset.action === 'clear-reports') clearReports(group);
+      if (button.dataset.action === 'copy-report') {
+        copyText(group.config.config_uri).then((ok) => toast(t(ok ? 'copied' : 'copyFailed'), ok ? 'ok' : 'err'));
+      }
+    });
+    $('adminCreateForm').addEventListener('submit', createAdmin);
+    $('adminsList').addEventListener('change', (event) => {
+      const input = event.target.closest('input[data-perm]');
+      if (input) saveAdminPerms(input.closest('[data-uid]'));
+    });
+    $('adminsList').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action="remove-admin"]');
+      if (!button) return;
+      const uid = button.closest('[data-uid]').dataset.uid;
+      const admin = state.admins.find((a) => a.user_id === uid);
+      if (admin) removeAdmin(admin);
+    });
+    $('adminRefresh').addEventListener('click', () => {
+      if (state.isAdmin) Promise.all([loadAdminConfigs(), loadSubmissions()]);
+    });
+    $('adminAdd').addEventListener('click', () => openConfigModal(null));
+    $('adminImport').addEventListener('click', openImport);
+    const resetAdmin = () => { state.adminPage = 1; renderAdminList(); };
+    $('adminSearch').addEventListener('input', resetAdmin);
+    $('adminStatusFilter').addEventListener('change', resetAdmin);
+    $('adminProtocolFilter').addEventListener('change', resetAdmin);
+    $('adminPager').addEventListener('click', (event) => {
+      const b = event.target.closest('button[data-go]');
+      if (!b || b.disabled) return;
+      state.adminPage = Number(b.dataset.go);
+      renderAdminList();
+    });
+
+    // Admin published list actions
+    $('adminList').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const card = button.closest('[data-id]');
+      const config = state.adminConfigs.find((c) => c.id === card.dataset.id);
+      if (!config) return;
+      const action = button.dataset.action;
+      if (action === 'edit') openConfigModal(config);
+      if (action === 'toggle') togglePublish(config);
+      if (action === 'delete') deleteConfig(config);
+    });
+
+    // Admin submissions queue actions
+    $('subsList').addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const card = button.closest('[data-id]');
+      const sub = state.submissions.find((s) => s.id === card.dataset.id);
+      if (!sub) return;
+      switch (button.dataset.action) {
+        case 'copy':
+          copyText(sub.config_uri).then((ok) => toast(t(ok ? 'copied' : 'copyFailed'), ok ? 'ok' : 'err'));
+          break;
+        case 'test':
+          testSubmission(sub, card);
+          break;
+        case 'approve':
+          approveSubmission(sub);
+          break;
+        case 'reject':
+          rejectSubmission(sub);
+          break;
+        default:
+          break;
+      }
+    });
+
+    // Config form
+    $('configForm').addEventListener('submit', saveConfigForm);
+    $('cfgUri').addEventListener('input', updateDetected);
+    $('cfgUri').addEventListener('blur', () => {
+      const p = parseConfigUri($('cfgUri').value);
+      if (p.ok && p.name && !$('cfgName').value.trim()) $('cfgName').value = p.name;
+    });
+
+    // Import
+    $('importPreviewBtn').addEventListener('click', previewImport);
+    $('importRun').addEventListener('click', runImport);
+
+    // Confirm dialog
+    $('confirmYes').addEventListener('click', () => settleConfirm(true));
+    $('confirmNo').addEventListener('click', () => settleConfirm(false));
+
+    // Overlays: close buttons, backdrop click, Escape
+    document.querySelectorAll('.overlay').forEach((overlay) => {
+      overlay.addEventListener('mousedown', (event) => {
+        if (event.target !== overlay) return;
+        if (overlay.id === 'confirmOverlay') settleConfirm(false);
+        else closeOverlay(overlay.id);
+      });
+      overlay.querySelectorAll('[data-close]').forEach((btn) => {
+        btn.addEventListener('click', () => closeOverlay(overlay.id));
+      });
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const open = [...document.querySelectorAll('.overlay.open')].pop();
+      if (!open) return;
+      if (open.id === 'confirmOverlay') settleConfirm(false);
+      else closeOverlay(open.id);
+    });
+
+    // Routing
+    window.addEventListener('hashchange', route);
+
+    // Auth state: sign-outs (including failed token refresh) return the admin to login
+    sb.auth.onAuthStateChange((event) => {
+      if (event !== 'SIGNED_OUT') return;
+      state.isAdmin = false;
+      state.adminConfigs = [];
+      state.submissions = [];
+      state.userId = null;
+      if (!state.userLoggingOut) state.gateNoticeKey = 'sessionExpired';
+      if (state.view === 'admin') renderAdmin();
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Init
+  // ------------------------------------------------------------------
+  applyI18n();
+  bindEvents();
+  route();
+})();
+</script>
+</body>
+</html>
